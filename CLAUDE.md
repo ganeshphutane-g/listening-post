@@ -4,7 +4,7 @@ Browser first-person horror game (three.js WebGPU + Rapier). [MASTER_PLAN.md](MA
 
 ## Every run (MASTER_PLAN §0)
 
-1. Bootstrap: `bash tools/bootstrap.sh` (written in M0.2; until then: `npm ci`, and `python3 -m venv .venv && .venv/bin/pip install bpy==5.2.2` only if you need Blender).
+1. Bootstrap: `bash tools/bootstrap.sh` (add `--blender` only if the run bakes or exports; `--no-apt` on the owner's computer). Electron lands at `.tools/bin/electron`.
 2. Read [HANDOFF.md](HANDOFF.md), the top of [BACKLOG.md](BACKLOG.md), and the last 20 entries of [DECISIONS.md](DECISIONS.md).
 3. Pick **one** item: the first unchecked backlog item whose `Needs:` are all done. Never start a second.
 4. Build it in small commits on `main` (`<item id>: <imperative summary>`). Keep `main` green.
@@ -28,6 +28,7 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | --- | --- |
 | `npm run dev` | Vite dev server (WebGPU needs localhost or https) |
 | `npm run verify` | type check, unit tests, production build, JS gzip budget |
-| `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `.venv` with bpy) |
+| `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `bash tools/bootstrap.sh --blender`) |
+| `xvfb-run -a .tools/bin/electron --no-sandbox tools/harness/shoot.cjs <url> <out.png> [mode]` | one frame through the Electron harness (serve with `npx vite preview` first) |
 
 URL flags: `?webgl=1` force WebGL2 · `?shot=1` fixed frames + readback, sets title `SHOT_READY` · `?view=lightmap|uv` debug views · `?nopost=1` · `?frames=N` · `?diag=1`.

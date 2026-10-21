@@ -1,5 +1,7 @@
 // Electron harness: open a page, forward its console, wait for document.title === 'SHOT_READY',
 // save a PNG. Usage: electron shoot.cjs <url> <out.png> [mode]   mode: webgpu-vulkan | webgpu-swiftshader | webgl
+// In a cloud session: xvfb-run -a .tools/bin/electron --no-sandbox tools/harness/shoot.cjs ... (root needs
+// --no-sandbox on the command line; appendSwitch below is too late for Electron's root check).
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const args = process.argv.slice(process.argv.findIndex((a) => a.endsWith('shoot.cjs')) + 1);
