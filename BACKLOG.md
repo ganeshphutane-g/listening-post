@@ -1,0 +1,300 @@
+# BACKLOG
+
+Work top to bottom. Pick the first unchecked item whose `Needs:` are all done (MASTER_PLAN §0).
+Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both together (decision first).
+
+## M0 Pipeline
+
+- [x] M0.1 Scaffold
+  - Do: Vite + TypeScript + three.js 0.186.1 + Rapier 0.21 + Vitest; scripts `dev`, `build`, `verify`. Port the pipeline-test scene.
+  - Accept: build succeeds; JavaScript under 2.5 MB gzip; verify runs green.
+  - Needs: none
+  - Est: 1 run
+- [ ] M0.2 Bootstrap
+  - Do: `tools/bootstrap.sh` installs every pinned tool in a fresh session (Electron from GitHub release with checksum).
+  - Accept: completes in a fresh session and prints all versions.
+  - Needs: M0.1
+  - Est: 1 run
+- [ ] M0.3 Harness
+  - Do: Electron runners: `shoot` (single frame), `tour` (camera stops), `scenarios`, `bench`; render-target readback; fail on any page error.
+  - Accept: tour renders through both backends; a planted error fails the run.
+  - Needs: M0.2
+  - Est: 1 run
+- [ ] M0.4 Lightmap pipeline
+  - Do: Bake script (Cycles + denoise), UV orientation fix, encoding test (RGBM KTX2 vs HDR KTX2), lightmap debug view.
+  - Accept: debug view matches the reference; encoded map within 2 MB per 1024²; no visible banding in the tour.
+  - Needs: M0.3
+  - Est: 1 run
+- [ ] M0.5 Asset routes
+  - Do: `tools/fetch_assets.py` for the owner's computer; `content/asset_manifest.json` v1 (first 12 materials, 4 HDRIs); ledger and its check.
+  - Accept: dry run lists files and licences; ledger check passes.
+  - Needs: M0.4
+  - Est: 1 run
+- [ ] M0.6 Preview channel
+  - Do: Try a private Claude artifact page first; fall back to Cloudflare Pages.
+  - Accept: the owner opens the preview on PC and Mac.
+  - Needs: M0.5
+  - Est: 1 run
+- [ ] M0.7 Benchmark
+  - Do: `?bench=1`: 60-second camera path; writes average FPS, 1% low, 95th-percentile frame time, draw calls, triangles, backend, GPU string; copy button and file download.
+  - Accept: the owner returns results from both machines.
+  - Needs: M0.6
+  - Est: 1 run
+- [x] M0.8 Memory files
+  - Do: `CLAUDE.md`, `HANDOFF.md`, `BACKLOG.md` (this backlog), `DECISIONS.md` (D-001 onward), `docs/ASSETS.md`, `CHANGELOG.md`.
+  - Accept: all present and linked from `CLAUDE.md`.
+  - Needs: none
+  - Est: 1 run
+
+## M1 Core feel
+
+- [ ] M1.1 Input
+  - Do: Pointer lock, raw mouse, sensitivity, invert, gamepad, remapping, settings persistence.
+  - Accept: unit tests for mapping; scenario: pointer lock released on Esc opens pause.
+  - Needs: all M0 items
+  - Est: 1 run
+- [ ] M1.2 Character controller
+  - Do: Walk, sprint with stamina, crouch, lean, stairs and slopes, head-bob toggle, footstep cadence.
+  - Accept: scenarios for step height, slope limit, crouch under a 1.2 m beam.
+  - Needs: M1.1
+  - Est: 1 run
+- [ ] M1.3 Flashlight
+  - Do: spot light on the camera with lag, cookie texture, battery drain, low-battery flicker, toggle
+  - Accept: tour frame shows the cookie pattern; unit test drains a full battery in 900 s of on-time (tunable)
+  - Needs: M1.2
+  - Est: 1 run
+- [ ] M1.4 Interaction
+  - Do: Focus ray, pick up, inspect and rotate, drag via joint, throw by hold time, doors on hinges with hand drag, drawers.
+  - Accept: scenarios: door opens by drag; throw distance within tuning range; drawers stop at limits.
+  - Needs: M1.3
+  - Est: 1 run
+- [ ] M1.5 Footsteps and impacts
+  - Do: Surface detection, sound selection, `SoundEvent` loudness.
+  - Accept: unit test of the loudness table; event log in debug overlay.
+  - Needs: M1.4
+  - Est: 1 run
+- [ ] M1.6 Menus and loading
+  - Do: Title (grants pointer lock and audio), pause, settings, loading progress, quality tier selection.
+  - Accept: scenario walks every menu; settings persist after reload.
+  - Needs: M1.5
+  - Est: 1 run
+- [ ] M1.7 Feel Lab
+  - Do: Test room with every interactable and surface type; first owner build.
+  - Accept: playtest 1 notes logged.
+  - Needs: M1.6
+  - Est: 1 run
+
+## M2 Greybox level
+
+- [ ] M2.1 Layout data
+  - Do: `content/layout.json` and `content/rooms.json` for L1–L3 (rooms, openings, heights, acoustic tags).
+  - Accept: validator checks connectivity and opening sizes.
+  - Needs: all M1 items
+  - Est: 1 run
+- [ ] M2.2 Greybox generator
+  - Do: Blender script builds zone meshes and colliders from layout data.
+  - Accept: every room reachable in physics; tour per zone.
+  - Needs: M2.1
+  - Est: 1 run
+- [ ] M2.3 Zone streaming
+  - Do: Load and unload by portal proximity with budgets.
+  - Accept: memory stays within budget during a bot run.
+  - Needs: M2.2
+  - Est: 1 run
+- [ ] M2.4 Navmesh
+  - Do: Recast bake per zone with door and vent links; debug view.
+  - Accept: path queries succeed between all rooms.
+  - Needs: M2.3
+  - Est: 1 run
+- [ ] M2.5 Objective graph
+  - Do: Keys, power, codes, documents; soft-lock checker (graph search over states).
+  - Accept: checker proves the slice completable from every checkpoint.
+  - Needs: M2.4
+  - Est: 1 run
+- [ ] M2.6 Bot player
+  - Do: Follows navmesh paths through objectives, presses switches, uses doors.
+  - Accept: completes the slice headless at 4× speed.
+  - Needs: M2.5
+  - Est: 1 run
+- [ ] M2.7 Greybox bake
+  - Do: First full-level lightmap bake to measure bake time at scale.
+  - Accept: bake time and lightmap sizes recorded in `docs/TECH.md`.
+  - Needs: M2.6
+  - Est: 1 run
+
+## M3 Creature and squad AI
+
+- [ ] M3.1 Sound propagation
+  - Do: on the room graph with debug overlay.
+  - Accept: unit tests for door states and distance loss.
+  - Needs: all M2 items
+  - Est: 1 run
+- [ ] M3.2 Light exposure
+  - Do: from lightmap luminance at the player plus dynamic lights.
+  - Accept: tests: dark corner below threshold, flashlight on above.
+  - Needs: M3.1
+  - Est: 1 run
+- [ ] M3.3 Perception
+  - Do: (vision cone with raycasts, hearing, suspicion meter).
+  - Accept: scenarios for seen, unseen-in-shadow, heard-through-door.
+  - Needs: M3.2
+  - Est: 1 run
+- [ ] M3.4 Beliefs
+  - Do: (last known position, room probabilities, spread and decay).
+  - Accept: unit tests on spread; overlay heat map in tour.
+  - Needs: M3.3
+  - Est: 1 run
+- [ ] M3.5 Utility decisions
+  - Do: with visible scores.
+  - Accept: scenarios produce the expected action for 10 staged situations.
+  - Needs: M3.4
+  - Est: 1 run
+- [ ] M3.6 Creature locomotion and actions
+  - Do: (navmesh agent, vents, barricade testing).
+  - Accept: reaches any room; breaks a weak barricade, not a strong one.
+  - Needs: M3.5
+  - Est: 1 run
+- [ ] M3.7 Learning
+  - Do: (habit counters, lure fatigue).
+  - Accept: the third identical lure is ignored; favourite hiding spot is checked first.
+  - Needs: M3.6
+  - Est: 1 run
+- [ ] M3.8 Squad AI
+  - Do: (sweeps, cover, shared knowledge, panic).
+  - Accept: four-soldier sweep clears a zone without stacking in doorways.
+  - Needs: M3.7
+  - Est: 1 run
+- [ ] M3.9 Radio intel and spoofing
+  - Do: (grammar, scanner, transmitter, credibility).
+  - Accept: intercepted messages match squad state in scenarios; a believable spoof redirects the squad, a contradicted one does not.
+  - Needs: M3.8
+  - Est: 1 run
+- [ ] M3.10 Director
+  - Do: (tension, quiet stretches, fairness rules).
+  - Accept: 30-minute bot soak shows quiet stretches after every chase and no out-of-view teleports.
+  - Needs: M3.9
+  - Est: 1 run
+- [ ] M3.11 Scenario suite
+  - Do: of at least 20 AI scenarios and a 30-minute soak with no stuck agents.
+  - Accept: suite green; playtest 2 notes logged.
+  - Needs: M3.10
+  - Est: 1 run
+
+## M4 Art pass
+
+- [ ] M4.1 Art bible
+  - Do: with reference renders and a colour-grading LUT.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: all M3 items
+  - Est: 1 run
+- [ ] M4.2 Modular kit generator
+  - Do: (walls, floors, ceilings, door frames, pipes, cable trays, vents, stairs, railings) with trim-sheet and lightmap UVs.
+  - Accept: kit snaps on a 0.5 m grid; tour shows no seams.
+  - Needs: M4.1
+  - Est: 1 run
+- [ ] M4.3 Materials
+  - Do: from scanned sources to KTX2, with grime masks and a wetness layer.
+  - Accept: every surface uses a ledgered material; texture memory within budget.
+  - Needs: M4.2
+  - Est: 1 run
+- [ ] M4.4 Props
+  - Do: (procedural consoles, radios, lockers, desks, chairs, cabinets, crates; scanned props) with LODs.
+  - Accept: draw calls within budget in the densest room.
+  - Needs: M4.3
+  - Est: 1 run
+- [ ] M4.5 Decals
+  - Do: (grime, stains, blood, signage).
+  - Accept: no repetition visible in the tour's long corridor stops.
+  - Needs: M4.4
+  - Est: 1 run
+- [ ] M4.6 Lighting pass
+  - Do: per zone: fixtures, flicker groups, emergency lights, bakes, light probes, reflection cubemaps.
+  - Accept: per-zone tour approved by owner screenshots.
+  - Needs: M4.5
+  - Est: 1 run
+- [ ] M4.7 Post and tiers
+  - Do: tuned with the owner's benchmark files.
+  - Accept: each tier within its frame budget on the owner's machines.
+  - Needs: M4.6
+  - Est: 1 run
+- [ ] M4.8 Characters
+  - Do: (MakeHuman soldiers with masks and helmets; the creature), Mixamo animations retargeted with three.js `SkeletonUtils.retargetClip`, foot IK, ragdolls.
+  - Accept: animation test scene renders every clip without foot sliding above tolerance.
+  - Needs: M4.7
+  - Est: 1 run
+- [ ] M4.9 Particles
+  - Do: (dust motes, drips, steam, sparks).
+  - Accept: visible in flashlight in the tour; within budget.
+  - Needs: M4.8
+  - Est: 1 run
+- [ ] M4.10 Performance pass
+  - Do: (instancing, merging, culling, texture streaming).
+  - Accept: all budgets met; gate screenshots.
+  - Needs: M4.9
+  - Est: 1 run
+
+## M5 Story and audio
+
+- [ ] M5.1 Script:
+  - Do: beats, 25 documents, radio grammar, subtitles file ready for translation.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: all M4 items
+  - Est: 1 run
+- [ ] M5.2 Voice:
+  - Do: radio and PA lines synthesised on the owner's PC (§12) or text-only fallback; radio filter chain.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: M5.1
+  - Est: 1 run
+- [ ] M5.3 Audio engine:
+  - Do: HRTF sources, generated impulse responses per room, occlusion from the room graph, ducking, music stems with tension.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: M5.2
+  - Est: 1 run
+- [ ] M5.4 Set pieces
+  - Do: (6–8) built from systems: power failure, flooded corridor, squad ambush, silhouette reveal, finale.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: M5.3
+  - Est: 1 run
+- [ ] M5.5 Journal and deduction board;
+  - Do: spoofing polish.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: M5.4
+  - Est: 1 run
+- [ ] M5.6 Full-run bot and telemetry
+  - Do: (encounter spacing, death heat map).
+  - Accept: bot full run; playtest 3 notes logged.
+  - Needs: M5.5
+  - Est: 1 run
+
+## M6 Polish and release
+
+- [ ] M6.1 Saves and accessibility
+  - Do: (checkpoints, subtitles options, colour-safe interface, reduced motion, hold or toggle inputs).
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: all M5 items
+  - Est: 1 run
+- [ ] M6.2 Loading and caching
+  - Do: (zone preload, compression, service worker, progress).
+  - Accept: first playable within 60 MB compressed.
+  - Needs: M6.1
+  - Est: 1 run
+- [ ] M6.3 Browser matrix:
+  - Do: Chrome, Edge, Firefox, Safari on Windows and macOS (owner machines plus Claude in Chrome).
+  - Accept: matrix recorded in `docs/TECH.md`.
+  - Needs: M6.2
+  - Est: 1 run
+- [ ] M6.4 Bug bash:
+  - Do: two-hour bot soak; fix top issues.
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: M6.3
+  - Est: 1 run
+- [ ] M6.5 Credits and licences
+  - Do: from the ledger (including "Powered by Poly Haven" if the API was used).
+  - Accept: owner approves (see MASTER_PLAN §9 gate)
+  - Needs: M6.4
+  - Est: 1 run
+- [ ] M6.6 itch.io page and build
+  - Do: (≤ 500 MB, ≤ 1,000 files).
+  - Accept: release candidate approved by the owner.
+  - Needs: M6.5
+  - Est: 1 run
