@@ -36,3 +36,17 @@ Format: MASTER_PLAN §8.6. Newest at the bottom.
 - Alternatives: none reasonable; MASTER_PLAN §4.10 already asks for robust browser behaviour.
 - Consequences: the scene survives hidden tabs, collapsed panes and window resizes.
 - Revisit when: device-loss handling lands (§4.10).
+
+## 2026-10-21 D-006 Bootstrap pins Electron checksums in the script; Blender is opt-in
+- Context: M0.2 installs Electron from the GitHub release "with checksum check". Checking against the release's own SHASUMS256.txt would trust the same source as the download. MASTER_PLAN §0 says to install export and bake tools only on runs that need them.
+- Decision: `tools/bootstrap.sh` carries the SHA-256 of `electron-v45.0.0-{linux-x64,darwin-arm64,darwin-x64}.zip` (copied from the release's SHASUMS256.txt on 2026-10-21) and fails on mismatch. Electron unpacks into `.tools/` (git-ignored), linked at `.tools/bin/electron`. `bpy` installs only with `--blender`; `--no-apt` skips system packages. Written for bash 3.2 so it also runs on the owner's Mac.
+- Alternatives: download SHASUMS256.txt at run time (no protection against a swapped release); always install bpy (≈30 s and several hundred MB per run for nothing).
+- Consequences: bumping Electron means updating three hashes in the script; runs that bake must pass `--blender`.
+- Revisit when: Electron is upgraded, or a Windows bootstrap is needed.
+
+## 2026-10-21 D-007 bpy 5.2.2 needs Python 3.13
+- Context: PyPI has `bpy==5.2.2` wheels for CPython 3.13 only; the cloud image's default `python3` is 3.11, so `python3 -m venv .venv && pip install bpy==5.2.2` fails.
+- Decision: bootstrap builds `.venv` with `python3.13` (present in the cloud image) and recreates a `.venv` made with another Python.
+- Alternatives: drop to bpy 5.0.1 (last cp311 wheel; breaks the §4.1 pin and the M0.1 assets' provenance).
+- Consequences: the owner's Mac also needs `python3.13` on PATH for `--blender`.
+- Revisit when: bpy is upgraded.

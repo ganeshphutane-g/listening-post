@@ -10,7 +10,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: build succeeds; JavaScript under 2.5 MB gzip; verify runs green.
   - Needs: none
   - Est: 1 run
-- [ ] M0.2 Bootstrap
+- [x] M0.2 Bootstrap
   - Do: `tools/bootstrap.sh` installs every pinned tool in a fresh session (Electron from GitHub release with checksum).
   - Accept: completes in a fresh session and prints all versions.
   - Needs: M0.1
