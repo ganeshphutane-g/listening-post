@@ -58,7 +58,7 @@ Never, in any run:
 
 ## 1. North star and non-negotiables
 
-**Goal.** A first-person horror vertical slice, 45 to 90 minutes long (target), that looks and sounds as real as free tools allow, playable in Chrome, Edge, Firefox and Safari on Windows and macOS.
+**Goal.** A first-person horror vertical slice, 45 to 90 minutes long (target), that looks and sounds as real as free tools allow, playable in Chrome, Edge, Firefox and Safari on Windows and macOS laptops and desktops (D-008: no phones or tablets).
 
 **Definition of "realistic" for this project** (targets, each checked as listed in §5):
 
@@ -381,6 +381,7 @@ Quality tiers (targets; auto-detected on first run, adjustable):
 - Pointer lock and audio need a user gesture; the title screen's Play button grants both.
 - Pause when the tab is hidden; release the pointer on Esc and show the pause menu.
 - Handle WebGPU device loss: save settings, reload the page into the last checkpoint.
+- Laptops and desktops only (D-008). The game adapts to any window: sizes from 1280×720 up to 3440×1440 and 4K, aspect ratios 16:9, 16:10, 3:2 and 21:9, device pixel ratios 1 to 2 (Retina, scaled Windows displays), browser zoom, resizing and fullscreen. The view keeps a horizontal field of view the player sets, so wider screens see more, not a stretched image. Render resolution follows a render-scale setting capped by the quality tier, not the raw pixel ratio. Interface text and prompts scale with the window height. On a phone or tablet (touch-only, no fine pointer) the game shows a notice that it needs a laptop or desktop browser instead of starting.
 - Pre-compile shaders during loading (`renderer.compileAsync`) to avoid stutter on first sight of a material.
 - Pool objects in hot paths; watch for garbage-collection spikes in the benchmark.
 
@@ -594,7 +595,7 @@ Run counts are estimates and are re-based after M1 from measured runs per item.
 
 | Milestone | Runs (estimate) | Gate (owner checks) |
 | --- | --- | --- |
-| M0 Pipeline | 2–4 | Preview runs on your PC and Mac, WebGPU and WebGL2 paths; benchmark files returned |
+| M0 Pipeline | 2–4 | Preview runs on your Mac in Chrome and Safari, WebGPU and WebGL2 paths; benchmark file returned (a Windows machine joins when a tester is available, D-008) |
 | M1 Core feel | 4–8 | Playtest 1: moving and interacting feel right |
 | M2 Greybox level | 4–8 | Bots finish the slice; you review the layout |
 | M3 Creature and squad AI | 8–15 | Playtest 2: tense and fair? Sets the final scope |
@@ -610,9 +611,10 @@ Run counts are estimates and are re-based after M1 from measured runs per item.
 - [ ] **M0.3 Harness.** Electron runners: `shoot` (single frame), `tour` (camera stops), `scenarios`, `bench`; render-target readback; fail on any page error. *Accept:* tour renders through both backends; a planted error fails the run.
 - [ ] **M0.4 Lightmap pipeline.** Bake script (Cycles + denoise), UV orientation fix, encoding test (RGBM KTX2 vs HDR KTX2), lightmap debug view. *Accept:* debug view matches the reference; encoded map within 2 MB per 1024²; no visible banding in the tour.
 - [ ] **M0.5 Asset routes.** `tools/fetch_assets.py` for the owner's computer; `content/asset_manifest.json` v1 (first 12 materials, 4 HDRIs); ledger and its check. *Accept:* dry run lists files and licences; ledger check passes.
-- [ ] **M0.6 Preview channel.** Try a private Claude artifact page first; fall back to Cloudflare Pages. *Accept:* the owner opens the preview on PC and Mac.
-- [ ] **M0.7 Benchmark.** `?bench=1`: 60-second camera path; writes average FPS, 1% low, 95th-percentile frame time, draw calls, triangles, backend, GPU string; copy button and file download. *Accept:* the owner returns results from both machines.
+- [ ] **M0.6 Preview channel.** Try a private Claude artifact page first; fall back to Cloudflare Pages. *Accept:* the owner opens the preview on the Mac in Chrome and Safari (Windows when a tester is available, D-008).
+- [ ] **M0.7 Benchmark.** `?bench=1`: 60-second camera path; writes average FPS, 1% low, 95th-percentile frame time, draw calls, triangles, backend, GPU string; copy button and file download. *Accept:* the owner returns results from the Mac in Chrome and Safari (Windows when a tester is available, D-008).
 - [ ] **M0.8 Memory files.** `CLAUDE.md`, `HANDOFF.md`, `BACKLOG.md` (this backlog), `DECISIONS.md` (D-001 onward), `docs/ASSETS.md`, `CHANGELOG.md`. *Accept:* all present and linked from `CLAUDE.md`.
+- [ ] **M0.9 Responsive display (D-008).** Window resize, device pixel ratio, render scale capped per tier, horizontal-FOV camera for any aspect ratio, interface scaling, fullscreen toggle, phone and tablet notice. *Accept:* the tour renders at 1280×720, 1366×768, 1440×900, 1920×1080, 2560×1600 at pixel ratio 2, and 3440×1440 through both backends with no page errors and no stretching; a resize mid-run keeps rendering; a touch-only device profile shows the notice.
 
 ### M1 Core feel
 

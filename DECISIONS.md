@@ -50,3 +50,10 @@ Format: MASTER_PLAN §8.6. Newest at the bottom.
 - Alternatives: drop to bpy 5.0.1 (last cp311 wheel; breaks the §4.1 pin and the M0.1 assets' provenance).
 - Consequences: the owner's Mac also needs `python3.13` on PATH for `--blender`.
 - Revisit when: bpy is upgraded.
+
+## 2026-10-21 D-008 Laptops and desktops only, every major browser, any window
+- Context: the owner wants the game to work in every major browser on Mac and Windows laptops, and not on phones or tablets. The owner has no Windows PC.
+- Decision: target Chrome, Edge, Firefox and Safari on macOS and Windows laptops and desktops. The game adapts to any window size, aspect ratio, pixel ratio, zoom level and fullscreen (rules in MASTER_PLAN §4.10). Touch-only phones and tablets get a "laptop or desktop browser needed" notice. New backlog item M0.9 builds it, after the harness (M0.3) so the tour can check several viewport sizes.
+- Alternatives: phone and tablet support (touch controls, much tighter GPU and memory budgets; the realism goals in §1 do not survive it); a fixed 16:9 canvas with black bars (wastes laptop screens of other shapes).
+- Consequences: Windows is tested without the owner's hardware: Chromium in the Electron harness covers Chrome and Edge rendering; Windows-only differences (Direct3D 12 WebGPU, Firefox on Windows) wait for outside testers at M6.3. The M0 gate, M0.6 and M0.7 now ask for the Mac in Chrome and Safari only.
+- Revisit when: the owner asks for mobile, or a Windows tester joins.

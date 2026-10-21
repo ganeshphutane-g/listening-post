@@ -32,12 +32,12 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Est: 1 run
 - [ ] M0.6 Preview channel
   - Do: Try a private Claude artifact page first; fall back to Cloudflare Pages.
-  - Accept: the owner opens the preview on PC and Mac.
+  - Accept: the owner opens the preview on the Mac in Chrome and Safari (Windows when a tester is available, D-008).
   - Needs: M0.5
   - Est: 1 run
 - [ ] M0.7 Benchmark
   - Do: `?bench=1`: 60-second camera path; writes average FPS, 1% low, 95th-percentile frame time, draw calls, triangles, backend, GPU string; copy button and file download.
-  - Accept: the owner returns results from both machines.
+  - Accept: the owner returns results from the Mac in Chrome and Safari (Windows when a tester is available, D-008).
   - Needs: M0.6
   - Est: 1 run
 - [x] M0.8 Memory files
@@ -45,13 +45,18 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: all present and linked from `CLAUDE.md`.
   - Needs: none
   - Est: 1 run
+- [ ] M0.9 Responsive display (D-008)
+  - Do: window resize, device pixel ratio, render scale capped per quality tier, horizontal-FOV camera for any aspect ratio, interface scaling, fullscreen toggle, phone and tablet notice (MASTER_PLAN §4.10)
+  - Accept: the tour renders at 1280×720, 1366×768, 1440×900, 1920×1080, 2560×1600 at pixel ratio 2, and 3440×1440 through both backends with no page errors and no stretching; a resize mid-run keeps rendering; a touch-only device profile shows the notice
+  - Needs: M0.3
+  - Est: 1 run
 
 ## M1 Core feel
 
 - [ ] M1.1 Input
   - Do: Pointer lock, raw mouse, sensitivity, invert, gamepad, remapping, settings persistence.
   - Accept: unit tests for mapping; scenario: pointer lock released on Esc opens pause.
-  - Needs: all M0 items
+  - Needs: all M0 items (including M0.9)
   - Est: 1 run
 - [ ] M1.2 Character controller
   - Do: Walk, sprint with stamina, crouch, lean, stairs and slopes, head-bob toggle, footstep cadence.

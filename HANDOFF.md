@@ -1,5 +1,7 @@
 # HANDOFF — 2026-10-21 20:15 IST — run 2 (scheduled, cloud session)
 
+> **PAUSED by the owner on 2026-10-21.** Do not start any backlog item. If a run starts anyway, change nothing and stop. The routine "Listening Post daily build" is disabled; the owner will say when to resume (then re-enable it at https://claude.ai/code/routines/trig_01GDfwsaPBiuagjXtDGfS8EA and delete this line).
+
 ## State
 - Milestone: M0 Pipeline — 3/8 items (M0.1, M0.2, M0.8)
 - Build: green — npm run verify: tsc strict OK; 4/4 unit tests; vite build OK; JS 2.03 MB gzip (limit 2.50 MB)
@@ -34,8 +36,11 @@
 - Mac: MacBook Air M1, 8 GB unified memory, macOS 26.5.1, Chrome + Safari. It is the Medium-tier reference machine (§4.4) and the tightest memory target: 8 GB is shared by the OS, the browser and the GPU, so keep texture memory near the Low-tier budget (0.5 GB) until the owner's benchmark (M0.7) says otherwise.
 - `python3` on the Mac is 3.13.2 and `bpy` 5.2.2 imports in `.venv`, so `bash tools/bootstrap.sh --blender --no-apt` works there (checked 2026-10-21).
 
+- Windows PC: none. Windows browsers are covered by the Electron (Chromium) harness and outside testers at M6.3 (D-008).
+- Target devices (owner, 2026-10-21): laptops and desktops only, Mac and Windows, every major browser; responsive to any window. Built in M0.9 (D-008).
+
 ## Questions for you
-- Do you have a Windows PC for testing? If yes: its GPU and the browsers you use. The plan targets Windows and macOS (§1); without a PC, Windows checks fall to the browser matrix at M6.3.
+- none
 
 ## Usage note
 - Run size (self-estimate): small
