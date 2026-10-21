@@ -4,7 +4,7 @@
 - Milestone: M0 Pipeline — 2/8 items (M0.1, M0.8)
 - Build: green — npm run verify: tsc strict OK; 4/4 unit tests; vite build OK; JS 2.03 MB gzip (limit 2.50 MB)
 - Preview: none (local only: `npm run dev`)
-- Repository: local git only, branch `main`. **Not on GitHub yet** — see Questions.
+- Repository: https://github.com/ganeshphutane-g/listening-post (public, branch `main`). Public, so GitHub Pages is available for previews (M0.6).
 
 ## This run
 - Item: M0.1 Scaffold — DONE; M0.8 Memory files — DONE (needed to record this run)
@@ -29,7 +29,7 @@
 - Visual baselines are not stored yet (M0.3). The M1 screenshots are reference images, not baselines: Metal and SwiftShader frames will differ.
 
 ## Questions for you
-- Create the GitHub repository: name and public or private? (Public gets free GitHub Pages; private previews go through an artifact page or Cloudflare Pages.)
+- Connect GitHub to Claude with access to `ganeshphutane-g/listening-post` so scheduled runs can clone and push (MASTER_PLAN §11), then approve the scheduled task (§8.2 prompt, with `<OWNER>/<REPO>` = `ganeshphutane-g/listening-post`).
 - Your Claude plan (Pro or Max), your Windows PC's GPU, and which browsers you use there. This Mac: MacBook Air M1, 8 GB, macOS 26.5.1, Chrome + Safari. That's the plan's Medium tier.
 
 ## Usage note
