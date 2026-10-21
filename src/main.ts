@@ -1,6 +1,7 @@
 // Browser pipeline test: Blender-baked lightmap + real-time flashlight shadows + volumetric fog
 // + screen-space reflections + bloom + film grain (three.js r186, WebGPU with WebGL2 fallback)
-// + Rapier physics crates. URL params: ?shot=1 (render fixed frames, then signal), ?webgl=1 (force WebGL2)
+// + Rapier physics crates. URL params: ?shot=1 (render fixed frames, then signal), ?webgl=1 (force WebGL2),
+// ?view=lightmap|uv (debug views), ?nopost=1, ?frames=N, ?diag=1
 import * as THREE from 'three/webgpu';
 import {
   pass, mrt, output, normalView, metalness, roughness, vec2, vec3, sample, packNormalToRGB,
@@ -17,6 +18,8 @@ import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import RAPIER from '@dimforge/rapier3d-compat';
+import { flipLightmapV } from './render/lightmap';
+import { packReadback } from './render/readback';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -25,20 +28,34 @@ const FORCE_WEBGL = params.has('webgl');
 const SHOT_FRAMES = Number(params.get('frames') || 24);
 const NOPOST = params.has('nopost');
 const VOL = 10; // layer for volumetric lighting
-const log = (...a) => console.log('[proto]', ...a);
-const hud = document.getElementById('hud');
+const log = (...a: unknown[]) => console.log('[proto]', ...a);
+const hud = document.getElementById('hud')!;
+
+// fields of the concrete backends that the base Backend type does not declare
+interface BackendInfo {
+  isWebGPUBackend?: boolean;
+  device?: {
+    addEventListener(type: 'uncapturederror', cb: (e: { error?: { message?: string } }) => void): void;
+    lost: Promise<{ reason: string; message: string }>;
+  };
+}
+declare global { interface Window { __png?: string } }
 
 const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: FORCE_WEBGL });
 renderer.setPixelRatio(1);
-renderer.setSize(innerWidth, innerHeight);
+// a hidden or collapsed host can report 0×0, and a zero-size swapchain invalidates every pass after it
+const viewSize = () => [Math.max(1, innerWidth), Math.max(1, innerHeight)] as const;
+renderer.setSize(...viewSize());
 renderer.toneMapping = THREE.AgXToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 await renderer.init();
-const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2';
-if (renderer.backend.isWebGPUBackend && renderer.backend.device) {
-  const dev = renderer.backend.device;
+const backendInfo = renderer.backend as unknown as BackendInfo;
+const isWebGPU = !!backendInfo.isWebGPUBackend;
+const backend = isWebGPU ? 'WebGPU' : 'WebGL2';
+if (isWebGPU && backendInfo.device) {
+  const dev = backendInfo.device;
   dev.addEventListener('uncapturederror', (e) => log('GPU_ERROR', e.error && e.error.message ? e.error.message.slice(0, 300) : String(e)));
   dev.lost.then((info) => log('DEVICE_LOST', info.reason, info.message));
 }
@@ -46,10 +63,16 @@ log('backend', backend);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x020203);
-const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 60);
+const camera = new THREE.PerspectiveCamera(72, viewSize()[0] / viewSize()[1], 0.05, 60);
 camera.position.set(0.35, 1.65, 1.2);
 camera.lookAt(-0.2, 1.35, -20);
 scene.add(camera);
+addEventListener('resize', () => {
+  const [w, h] = viewSize();
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+});
 
 // ---------- environment light for dynamic objects (CC0 HDRI from @pmndrs/assets) ----------
 const hdr = await new EXRLoader().loadAsync(warehouseHDR);
@@ -65,13 +88,11 @@ const corridor = (await gltf.loadAsync('./assets/corridor.glb')).scene;
 // world-space detail so no second UV set is needed: fractal noise drives albedo variation + bump
 const grime = mx_fractal_noise_float(positionWorld.mul(1.7), 5, 2.0, 0.5).mul(0.5).add(0.5);
 const pores = mx_fractal_noise_float(positionWorld.mul(9.0), 3, 2.0, 0.5);
-corridor.traverse((o) => {
-  if (!o.isMesh) return;
-  // Blender writes the bake bottom-up while glTF UVs are top-down: flip V once on the geometry
-  const uvA = o.geometry.attributes.uv;
-  for (let i = 0; i < uvA.count; i++) uvA.setY(i, 1 - uvA.getY(i));
-  uvA.needsUpdate = true;
-  const src = o.material;
+corridor.traverse((obj) => {
+  if (!(obj as THREE.Mesh).isMesh) return;
+  const o = obj as THREE.Mesh;
+  flipLightmapV(o.geometry.attributes.uv as THREE.BufferAttribute);
+  const src = o.material as THREE.MeshStandardMaterial;
   const m = new THREE.MeshStandardNodeMaterial();
   const isFloor = src.name === 'WetFloor';
   m.colorNode = vec3(src.color.r, src.color.g, src.color.b).mul(grime.mul(0.7).add(0.55));
@@ -88,8 +109,9 @@ scene.add(corridor);
 const VIEW = params.get('view');
 if (VIEW) { // debug views: lightmap through UVs, raw UVs
   const { texture: tex, uv: uvN } = await import('three/tsl');
-  corridor.traverse((o) => {
-    if (!o.isMesh) return;
+  corridor.traverse((obj) => {
+    if (!(obj as THREE.Mesh).isMesh) return;
+    const o = obj as THREE.Mesh;
     log('mesh', o.name, 'attributes', Object.keys(o.geometry.attributes).join(','));
     const m = new THREE.MeshBasicNodeMaterial();
     m.colorNode = VIEW === 'uv' ? vec3(uvN(), 0) : tex(lightmap, uvN()).rgb.mul(0.5);
@@ -131,7 +153,8 @@ const n3 = noise3D();
 const fogMat = new THREE.VolumeNodeMaterial();
 fogMat.steps = 14;
 fogMat.offsetNode = bayer16(screenCoordinate);
-fogMat.scatteringNode = Fn(({ positionRay }) => {
+// VolumeNodeMaterial passes positionRay; Fn's typings do not model it
+fogMat.scatteringNode = Fn(({ positionRay }: any) => {
   const drift = vec3(time.mul(0.03), 0, time.mul(0.01));
   const d = texture3D(n3, positionRay.mul(0.12).add(drift).mod(1), 0).r;
   return d.mul(0.9).add(0.25).mul(0.12);
@@ -144,12 +167,12 @@ scene.add(fogBox);
 // ---------- physics: Rapier ----------
 await RAPIER.init();
 const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-const fixed = (hx, hy, hz, x, y, z) => world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z));
+const fixed = (hx: number, hy: number, hz: number, x: number, y: number, z: number) => world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z));
 fixed(2, 0.1, 12, 0, -0.1, -10); fixed(0.1, 1.6, 12, -2.1, 1.5, -10); fixed(0.1, 1.6, 12, 2.1, 1.5, -10);
 for (const z of [-4, -10, -16]) for (const x of [-1.75, 1.75]) fixed(0.25, 1.5, 0.25, x, 1.5, z);
 const crateMesh = (await gltf.loadAsync('./assets/crate.glb')).scene;
-crateMesh.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
-const crates = [];
+crateMesh.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = o.receiveShadow = true; } });
+const crates: { body: RAPIER.RigidBody; mesh: THREE.Object3D }[] = [];
 const spots = [[-1.2, 0.5, -5.5], [-1.2, 1.45, -5.5], [-0.22, 0.5, -5.6], [1.2, 0.9, -8.5], [1.1, 2.3, -8.4], [-0.9, 2.4, -12]];
 spots.forEach(([x, y, z], i) => {
   const body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y, z)
@@ -187,7 +210,7 @@ pipeline.outputNode = NOPOST ? colorTex : smaa(film(lit.add(glow), uniform(0.22)
 // ---------- loop ----------
 const flicker = new ImprovedNoise();
 let frame = 0, t = 0;
-const frameMs = [];
+const frameMs: number[] = [];
 if (SHOT) { for (let i = 0; i < 300; i++) world.step(); }
 syncCrates();
 renderer.setAnimationLoop(() => {
@@ -210,7 +233,7 @@ renderer.setAnimationLoop(() => {
     hud.textContent = '';
     if (params.has('diag')) {
       const c2 = document.createElement('canvas'); c2.width = 96; c2.height = 54;
-      const g = c2.getContext('2d'); g.drawImage(renderer.domElement, 0, 0, 96, 54);
+      const g = c2.getContext('2d')!; g.drawImage(renderer.domElement, 0, 0, 96, 54);
       const px = g.getImageData(0, 0, 96, 54).data; let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
       log('CANVAS_MEAN', (sum / (px.length / 4) / 3).toFixed(1));
     }
@@ -227,13 +250,8 @@ async function readback() {
   renderer.setRenderTarget(rt); pipeline.render(); renderer.setRenderTarget(null);
   const px = await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h);
   const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const g = c.getContext('2d'); const img = g.createImageData(w, h);
-  const bottomUp = !renderer.backend.isWebGPUBackend, rowBytes = px.length / h;
-  for (let y = 0; y < h; y++) {
-    const src = (bottomUp ? h - 1 - y : y) * rowBytes;
-    img.data.set(px.subarray(src, src + w * 4), y * w * 4);
-  }
-  for (let i = 3; i < img.data.length; i += 4) img.data[i] = 255;
+  const g = c.getContext('2d')!; const img = g.createImageData(w, h);
+  img.data.set(packReadback(px as Uint8Array, w, h, !isWebGPU));
   g.putImageData(img, 0, 0);
   window.__png = c.toDataURL('image/png');
 }

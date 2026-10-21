@@ -1,12 +1,14 @@
 """Browser-pipeline test: model a corridor in headless Blender, bake global illumination into a
 lightmap with Cycles (CPU), export the mesh as glTF and the lightmap as EXR.
-Usage: python3 bake_corridor.py <out_dir> [samples] [lightmap_px]"""
+Usage: python3 bake_corridor.py <out_dir> [samples] [lightmap_px] [raw_dir]
+raw_dir keeps the un-denoised bake out of the shipped assets (defaults to out_dir)."""
 import sys, time, math
 import bpy
 
 out_dir = sys.argv[1]
 SAMPLES = int(sys.argv[2]) if len(sys.argv) > 2 else 128
 LM = int(sys.argv[3]) if len(sys.argv) > 3 else 1024
+RAW_DIR = sys.argv[4] if len(sys.argv) > 4 else out_dir
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scn = bpy.context.scene
 
@@ -95,7 +97,7 @@ bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"})
 bake_s = time.time() - t0
 
 # always keep the raw bake, then denoise it with OpenImageDenoise through the compositor
-img.filepath_raw = f"{out_dir}/corridor_lm_raw.exr"; img.file_format = "OPEN_EXR"; img.save()
+img.filepath_raw = f"{RAW_DIR}/corridor_lm_raw.exr"; img.file_format = "OPEN_EXR"; img.save()
 t1 = time.time()
 cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam")); scn.collection.objects.link(cam); scn.camera = cam
 scn.render.resolution_x = scn.render.resolution_y = LM

@@ -1,0 +1,28 @@
+{
+  "name": "listening-post",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check:bundle": "node tools/pipeline/check_bundle.mjs",
+    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle",
+    "assets:crate": ".venv/bin/python tools/blender/make_crate.py public/assets/crate.glb",
+    "assets:corridor": ".venv/bin/python tools/blender/bake_corridor.py public/assets 256 1024 assets_src"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "@pmndrs/assets": "1.7.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}
