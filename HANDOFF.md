@@ -29,9 +29,13 @@
 - Vite warns that the main chunk is over 4000 kB raw (the HDRI is inlined as base64). Within budget; revisit in M0.4/M6.2.
 - Visual baselines are not stored yet (M0.3). The screenshots so far are reference images, not baselines.
 
+## Owner setup (answered 2026-10-21)
+- Claude plan: Max ($100 tier), using Opus 5.5. Build runs stay on Opus 5.5; Fable only for a rare architecture or AI design review (MASTER_PLAN §12).
+- Mac: MacBook Air M1, 8 GB unified memory, macOS 26.5.1, Chrome + Safari. It is the Medium-tier reference machine (§4.4) and the tightest memory target: 8 GB is shared by the OS, the browser and the GPU, so keep texture memory near the Low-tier budget (0.5 GB) until the owner's benchmark (M0.7) says otherwise.
+- `python3` on the Mac is 3.13.2 and `bpy` 5.2.2 imports in `.venv`, so `bash tools/bootstrap.sh --blender --no-apt` works there (checked 2026-10-21).
+
 ## Questions for you
-- Your Claude plan (Pro or Max), your Windows PC's GPU, and which browsers you use there. This Mac: MacBook Air M1, 8 GB, macOS 26.5.1, Chrome + Safari. That's the plan's Medium tier.
-- If you regenerate Blender assets on the Mac: `bash tools/bootstrap.sh --blender --no-apt` needs `python3.13` on PATH (bpy 5.2.2 is 3.13-only). Your M0.1 bake worked, so you likely have it already.
+- Do you have a Windows PC for testing? If yes: its GPU and the browsers you use. The plan targets Windows and macOS (§1); without a PC, Windows checks fall to the browser matrix at M6.3.
 
 ## Usage note
 - Run size (self-estimate): small
