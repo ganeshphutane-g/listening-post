@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "note": "Objective graph (MASTER_PLAN §3.6, §3.7, M2.5). Items are picked up in a room; actions happen in a room once their needs are met and give a flag; locked openings name the item that opens them (content/layout.json lockedBy); the lift needs its power flag. src/world/objectives.ts proves the slice can be finished from the start and from every checkpoint.",
+  "items": [
+    { "id": "handover_note", "room": "L1_guard_post", "kind": "document", "beat": 1 },
+    { "id": "key_records", "room": "L1_dormitory", "kind": "key", "beat": 3 },
+    { "id": "station_secret", "room": "L1_records_office", "kind": "document", "beat": 4 },
+    { "id": "code_archives", "room": "L1_records_office", "kind": "code", "beat": 4 },
+    { "id": "reels", "room": "L2_archives", "kind": "objective", "beat": 7 },
+    { "id": "key_transmitter", "room": "L3_pump_room_b", "kind": "key", "beat": 9 },
+    { "id": "transmitter", "room": "L3_transmitter_room", "kind": "tool", "beat": 10 }
+  ],
+  "actions": [
+    { "id": "restore_lift_power", "room": "L2_power_room", "needs": [], "gives": "power_lift", "noisy": true, "beat": 5 },
+    { "id": "see_the_shaft", "room": "L3_antenna_shaft", "needs": ["transmitter"], "gives": "origin_seen", "beat": 11 }
+  ],
+  "escape": { "room": "L3_lift_lobby", "needs": ["reels", "power_lift"] },
+  "checkpoints": [
+    { "id": "cp_l1_guard_terminal", "kind": "teleprinter", "room": "L1_guard_post", "have": [] },
+    { "id": "cp_l1_to_l2", "kind": "level", "room": "L2_stairwell", "have": ["handover_note", "key_records", "station_secret", "code_archives"] },
+    { "id": "cp_l2_teleprinter", "kind": "teleprinter", "room": "L2_teleprinter_room", "have": ["handover_note", "key_records", "station_secret", "code_archives"] },
+    { "id": "cp_l2_to_l3", "kind": "level", "room": "L3_stairwell", "have": ["handover_note", "key_records", "station_secret", "code_archives", "reels", "power_lift"] },
+    { "id": "cp_l3_transmitter", "kind": "teleprinter", "room": "L3_transmitter_room", "have": ["handover_note", "key_records", "station_secret", "code_archives", "reels", "power_lift", "key_transmitter", "transmitter"] }
+  ]
+}

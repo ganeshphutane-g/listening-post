@@ -111,7 +111,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: path queries succeed between all rooms.
   - Needs: M2.3
   - Est: 1 run
-- [ ] M2.5 Objective graph
+- [x] M2.5 Objective graph
   - Do: Keys, power, codes, documents; soft-lock checker (graph search over states).
   - Accept: checker proves the slice completable from every checkpoint.
   - Needs: M2.4

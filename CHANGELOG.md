@@ -19,3 +19,4 @@
 - 2026-10-22 M1.7: Feel Lab at `?lab=1` — floor strips for every surface, stairs, 30° and 50° ramps, 1.2 m beam, hinged door, drawers, props from 0.4 kg to 25 kg, sound-event log on; `npm run lab` in verify; playtest guide in `docs/PLAYTESTS.md` (owner playtest pending).
 - 2026-10-22 M2.1: station layout for L1–L3 (29 rooms, 39 openings incl. 7 creature-only vents) in `content/layout.json`, acoustics in `content/rooms.json`, validator `src/world/layout.ts` with unit tests. Started before the M1 gate closed (owner playtest pending).
 - 2026-10-22 M2.1: floor plans of the layout in `docs/layout.svg`, drawn by `tools/pipeline/plan_svg.mjs`, for the owner's layout review.
+- 2026-10-22 M2.5: objective graph (`content/objectives.json`: 7 items, 2 actions, escape, 5 checkpoints) and soft-lock checker (`src/world/objectives.ts`), proven completable from the start and every checkpoint. Built ahead of M2.2–M2.4 (pure logic).
