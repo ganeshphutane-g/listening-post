@@ -24,7 +24,8 @@ import { installHarness } from './debug/harness';
 import { runBench } from './debug/bench';
 import { installDisplay } from './render/display';
 import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device';
-import { loadSettings } from './core/settings';
+import { loadSettings, saveSettings, type Settings } from './core/settings';
+import { Menus } from './ui/menus';
 import { Input } from './player/input';
 import { CharacterController } from './player/controller';
 import { Flashlight } from './player/flashlight';
@@ -55,6 +56,12 @@ if (isTouchOnly(readDeviceSignals())) {
   await new Promise<never>(() => {}); // phones and tablets stop here (D-008); nothing below runs
 }
 
+// loading progress for the loading screen (index.html); every three.js loader reports to the default manager
+const bar = document.querySelector<HTMLElement>('#loading i');
+THREE.DefaultLoadingManager.onProgress = (_url, loaded, total) => { if (bar) bar.style.width = `${Math.round((loaded / Math.max(total, 1)) * 100)}%`; };
+const settings = loadSettings();
+const tierFor = (q: Settings['quality']) => (q === 'auto' ? 'medium' : q); // hardware detection comes with M4.7
+
 const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: FORCE_WEBGL });
 renderer.toneMapping = THREE.AgXToneMapping;
 renderer.toneMappingExposure = 1.0;
@@ -77,7 +84,7 @@ const camera = new THREE.PerspectiveCamera(72, 16 / 9, 0.05, 60); // fov and asp
 camera.position.set(0.35, 1.65, 1.2);
 camera.lookAt(-0.2, 1.35, -20);
 scene.add(camera);
-const display = installDisplay(renderer, camera);
+const display = installDisplay(renderer, camera, tierFor(settings.quality), settings.fov);
 
 // ---------- environment light for dynamic objects (CC0 HDRI from @pmndrs/assets) ----------
 const hdr = await new EXRLoader().loadAsync(warehouseHDR);
@@ -215,7 +222,6 @@ const glow = bloom(lit, 0.3, 0.4, 0.85);
 pipeline.outputNode = NOPOST ? colorTex : smaa(film(lit.add(glow), uniform(0.22)));
 
 // ---------- input (M1.1) and the player's body (M1.2) ----------
-const settings = loadSettings();
 const input = new Input(renderer.domElement, settings);
 const player = new CharacterController(RAPIER, world, { x: 0.35, y: 0, z: 1.2 });
 player.headBob = settings.headBob;
@@ -224,13 +230,19 @@ const interaction = new Interaction(RAPIER, world, player.collider);
 crates.forEach(({ body }, i) => interaction.register(crateColliders[i], { kind: 'prop', body })); // ~25 kg: dragged, not lifted
 player.onFootstep = (e) => sound.footstep(e.position, e.gait, player.collider);
 if (params.has('debug')) installDebugOverlay(bus);
+// menus (M1.6): the title's Play grants pointer lock and audio; settings apply at once and are saved
+const audio = new AudioContext();
+const menus = params.has('bench') ? null : new Menus({ input, settings, audio, onSettings: (s) => {
+  saveSettings(s);
+  input.setSettings(s);
+  player.headBob = s.headBob;
+  settings.crouchToggle = s.crouchToggle;
+  display.setTier(tierFor(s.quality));
+  display.setFov(s.fov);
+} });
 const prompt = document.getElementById('prompt')!;
 let throwHeld = false;
 const viewDir = () => ({ x: -Math.sin(look.y) * Math.cos(look.x), y: Math.sin(look.x), z: -Math.cos(look.y) * Math.cos(look.x) });
-const pauseOverlay = document.getElementById('pause')!;
-const showPause = (paused: boolean) => { pauseOverlay.hidden = !paused || params.has('bench'); }; // DOM only: never in harness stills
-input.onPauseChange = showPause;
-showPause(input.paused);
 const look = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(camera.quaternion);
 const MAX_PITCH = THREE.MathUtils.degToRad(85);
 const STEP = 1 / 60; // fixed simulation step (§4.3); rendering runs every animation frame
@@ -280,8 +292,9 @@ function tick(physics: boolean) {
 }
 syncCrates();
 if (HARNESS) {
-  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input, onCameraCut: () => flashlight.snap(), sound, bus });
+  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input, onCameraCut: () => flashlight.snap(), sound, bus, menus: menus! });
 } else if (params.has('bench')) {
+  document.getElementById('loading')?.remove();
   runBench({ renderer, pipeline, camera, backend, isWebGPU, tick, display });
 } else {
   let last = performance.now();
@@ -292,3 +305,4 @@ if (HARNESS) {
     hud.textContent = `${backend}  frame ${++frame}`;
   });
 }
+menus?.ready();

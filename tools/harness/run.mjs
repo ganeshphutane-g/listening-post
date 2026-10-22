@@ -9,6 +9,7 @@
 //             benchpage      runs the real ?bench=N page (requestAnimationFrame, results panel) for 5 s
 //             responsive     resizes the running game through laptop window sizes (D-008, M0.9): no stretching,
 //                            pixel budget kept, frames render; then checks the phone/tablet notice
+//             menus          walks every menu (scenario 'menus'), reloads, and checks the settings persisted
 //             selftest       loads a page that throws; passes only if the error is caught
 //   options:  --backend webgpu|webgl|both (default both)   --size 960x540   --dpr 1
 //             --mode native|vulkan|swiftshader (default: native on macOS, vulkan on Linux)
@@ -156,6 +157,20 @@ async function run() {
     if (!caught) fail('selftest: the planted page error was not detected');
     else log('selftest: planted page error detected — harness fails runs on page errors');
     report.results.push({ planted: caught });
+  } else if (command === 'menus') {
+    await openGame(win, base, BACKENDS[0]);
+    const r = await call(win, `window.__harness.scenario('menus')`);
+    (r.pass ? log : fail)(`menus: ${r.pass ? 'PASS' : 'FAIL'} ${r.detail}`);
+    await openGame(win, base, BACKENDS[0]); // reload: settings must come back from storage
+    const after = await call(win, `(() => {
+      const saved = JSON.parse(localStorage.getItem('listening-post.settings.v1') || 'null');
+      document.getElementById('btn-title-settings').click();
+      return { saved: saved && { sens: saved.mouseSensitivity, invert: saved.invertY, flashlight: saved.bindings.flashlight[0] },
+        ui: { sens: document.getElementById('set-sens').value, invert: document.getElementById('set-invert').checked } };
+    })()`);
+    const ok = after.saved?.sens === 33 && after.saved?.invert === true && after.saved?.flashlight === 'KeyG' && after.ui.sens === '33' && after.ui.invert === true;
+    (ok ? log : fail)(`settings after reload: ${JSON.stringify(after)}${ok ? ' — persisted' : ''}`);
+    report.results.push(r, after);
   } else if (command === 'benchpage') {
     for (const backend of BACKENDS) {
       let result = null;

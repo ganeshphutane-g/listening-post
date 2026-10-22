@@ -13,6 +13,7 @@ import { interactionScenarios } from './interactionScenarios';
 import type { SoundEvents } from '../audio/soundEvents';
 import type { EventBus, GameEvents, SoundEvent } from '../core/events';
 import { CharacterController } from '../player/controller';
+import type { Menus } from '../ui/menus';
 
 export interface Stop { name: string; pos: [number, number, number]; target: [number, number, number] }
 export interface ScenarioResult { name: string; pass: boolean; detail: string }
@@ -34,6 +35,7 @@ export interface HarnessContext {
   onCameraCut: () => void;
   sound: SoundEvents;
   bus: EventBus<GameEvents>;
+  menus: Menus;
 }
 
 const STEP_MS = 1000 / 60;
@@ -90,11 +92,45 @@ export function installHarness(ctx: HarnessContext): void {
       const pass = steps.length >= 2 && steps.every((e) => e.surface === 'concrete_wet') && hits.length > 0 && hits.length <= 6 && loudest > steps[0].loudnessDb;
       return { name: 'sound-events', pass, detail: `${steps.length} footsteps (${steps[0]?.surface}, ${steps[0]?.loudnessDb} dB, e.g. ${steps[0]?.sound}); ${hits.length} impacts, loudest ${loudest.toFixed(0)} dB (${hits[0]?.sound})` };
     },
+    'menus': () => {
+      // M1.6: walk every menu the way a player would (real pointer lock needs a gesture, so lock changes are
+      // driven through the same handler the browser event calls) and change three settings on the way
+      const m = ctx.menus, steps: string[] = [];
+      const click = (id: string) => (document.getElementById(id) as HTMLElement).click();
+      const visible = (id: string) => !(document.getElementById(id) as HTMLElement).hidden;
+      const expect = (label: string, ok: boolean) => steps.push(`${ok ? 'ok' : 'FAIL'} ${label}`);
+      m.show('title');
+      expect('title shown', visible('title') && m.screen === 'title');
+      click('btn-title-settings');
+      expect('settings from title', visible('settings') && !visible('title'));
+      const sens = document.getElementById('set-sens') as HTMLInputElement;
+      sens.value = '33'; sens.dispatchEvent(new Event('input'));
+      click('set-invert');
+      (document.querySelector('button.bind[data-action="flashlight"][data-slot="0"]') as HTMLElement).click();
+      dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyG' }));
+      expect('flashlight rebound to G', ctx.input.settings.bindings.flashlight[0] === 'KeyG');
+      click('btn-back');
+      expect('back to title', visible('title'));
+      click('btn-play'); ctx.input.setLocked(true);
+      expect('playing: no menu', m.screen === 'playing' && !visible('title') && !visible('pause'));
+      ctx.input.setLocked(false);
+      expect('pointer released: pause menu', m.screen === 'paused' && visible('pause'));
+      click('btn-pause-settings');
+      expect('settings from pause', visible('settings'));
+      click('btn-back');
+      expect('back to pause', visible('pause'));
+      click('btn-resume'); ctx.input.setLocked(true);
+      expect('resumed', m.screen === 'playing');
+      ctx.input.setLocked(false); click('btn-quit');
+      expect('quit to title', visible('title') && m.screen === 'title');
+      return { name: 'menus', pass: steps.every((s) => s.startsWith('ok')), detail: steps.join('; ') };
+    },
     'pause-on-pointer-release': () => {
       // M1.1: releasing pointer lock (Esc, alt-tab) pauses and shows the overlay; locking resumes.
       // Real pointer lock needs a user gesture, so the scenario drives the same handler the browser event calls.
       const overlay = document.getElementById('pause')!;
       const before = ctx.input.paused;
+      ctx.menus.show('title');
       ctx.input.setLocked(true);
       const playing = !ctx.input.paused && overlay.hidden;
       ctx.input.setLocked(false);

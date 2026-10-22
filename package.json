@@ -14,10 +14,11 @@
     "harness": "node tools/harness/launch.mjs",
     "tour": "node tools/harness/launch.mjs tour",
     "scenarios": "node tools/harness/launch.mjs scenarios",
+    "menus": "node tools/harness/launch.mjs menus --backend webgpu",
     "bench": "node tools/harness/launch.mjs bench",
     "benchpage": "node tools/harness/launch.mjs benchpage",
     "responsive": "node tools/harness/launch.mjs responsive && node tools/harness/launch.mjs responsive --dpr 2 --sizes 1280x800,1440x900",
-    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle && npm run check:assets && node tools/harness/launch.mjs selftest && npm run scenarios && npm run tour && node tools/harness/launch.mjs tour --view lightmap && npm run responsive && npm run benchpage",
+    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle && npm run check:assets && node tools/harness/launch.mjs selftest && npm run scenarios && npm run menus && npm run tour && node tools/harness/launch.mjs tour --view lightmap && npm run responsive && npm run benchpage",
     "assets:crate": ".venv/bin/python tools/blender/make_crate.py public/assets/crate.glb",
     "assets:corridor": ".venv/bin/python tools/blender/bake_corridor.py public/assets 256 1024 assets_src && node tools/pipeline/encode_lightmap.mjs assets_src/corridor_lm.exr public/assets/corridor_lm.ktx2"
   },

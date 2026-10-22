@@ -36,8 +36,10 @@ export function horizontalFov(fovVertical: number, aspect: number): number {
 
 export interface DisplayState { cssW: number; cssH: number; dpr: number; pixelRatio: number; bufferW: number; bufferH: number; fovV: number; fovH: number; aspect: number; tier: Tier }
 
-/** Keeps renderer size, pixel ratio and camera in step with the window. Returns a function reporting the state. */
-export function installDisplay(renderer: THREE.WebGPURenderer, camera: THREE.PerspectiveCamera, tier: Tier = config.defaultTier as Tier): () => DisplayState {
+export type DisplayHandle = (() => DisplayState) & { setTier(t: Tier): void; setFov(fovVertical16x9: number): void };
+
+/** Keeps renderer size, pixel ratio and camera in step with the window. Calling the handle reports the state. */
+export function installDisplay(renderer: THREE.WebGPURenderer, camera: THREE.PerspectiveCamera, tier: Tier = config.defaultTier as Tier, fov = config.fovVertical16x9): DisplayHandle {
   let state!: DisplayState;
   const apply = () => {
     // a hidden or collapsed host can report 0×0, and a zero-size swapchain invalidates every pass after it
@@ -48,7 +50,7 @@ export function installDisplay(renderer: THREE.WebGPURenderer, camera: THREE.Per
     renderer.setSize(cssW, cssH);
     const aspect = cssW / cssH;
     camera.aspect = aspect;
-    camera.fov = verticalFovFor(aspect);
+    camera.fov = verticalFovFor(aspect, fov);
     camera.updateProjectionMatrix();
     const buf = renderer.domElement;
     state = { cssW, cssH, dpr, pixelRatio, bufferW: buf.width, bufferH: buf.height, fovV: camera.fov, fovH: horizontalFov(camera.fov, aspect), aspect, tier };
@@ -63,7 +65,10 @@ export function installDisplay(renderer: THREE.WebGPURenderer, camera: THREE.Per
   addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.altKey) { e.preventDefault(); void toggleFullscreen(); }
   });
-  return () => state;
+  return Object.assign(() => state, {
+    setTier(t: Tier) { tier = t; apply(); },
+    setFov(f: number) { fov = f; apply(); },
+  });
 }
 
 /** Alt+Enter, and the settings menu later (M1.6). Safari before 16.4 only has the prefixed call. */

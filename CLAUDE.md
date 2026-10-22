@@ -33,6 +33,7 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | `npm run tour` / `npm run scenarios` / `npm run bench` | one harness command (needs `npm run build` first); options after `--`: `--backend webgpu\|webgl\|both`, `--size 1280x720`, `--dpr 2`, `--mode native\|vulkan\|swiftshader`, `--update`, `--verbose` |
 | `npm run harness -- shoot [stop]` | one still per backend into `tests/visual/out/shoot/` |
 | `npm run tour -- --view lightmap` | tours the lightmap debug view against its own baselines (part of verify) |
+| `npm run menus` | walks every menu, reloads, checks settings persisted |
 | `npm run benchpage` | runs the real `?bench=5` page on both backends and checks its results and buttons |
 | `npm run responsive` | resizes the running game through laptop window sizes at 1× and 2× (no stretching, pixel budget, phone notice) |
 | `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `bash tools/bootstrap.sh --blender --ktx`); the corridor bake writes EXRs to `assets_src/` and encodes `corridor_lm.ktx2` |

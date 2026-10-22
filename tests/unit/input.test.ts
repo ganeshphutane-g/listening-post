@@ -12,6 +12,7 @@ describe('default bindings (MASTER_PLAN §3.8)', () => {
     expect(by.get('KeyR')).toEqual(['scanner']);
     expect(by.get('Tab')).toEqual(['journal']);
     expect(by.get('Mouse0')).toEqual(['interact']);
+    expect(by.get('Mouse2')).toEqual(['throw']); // right button (MouseEvent.button 2), not the middle one
     for (const actions of by.values()) expect(actions).toHaveLength(1);
   });
 });

@@ -16,18 +16,20 @@ export interface Settings {
   gamepadLookSpeed: number; // degrees per second at full stick
   crouchToggle: boolean;
   headBob: boolean; // motion effects can be turned off (§1 accessibility)
+  fov: number; // vertical field of view at 16:9, degrees (§1 accessibility); wider screens see more (D-010)
+  quality: 'auto' | 'low' | 'medium' | 'high' | 'ultra'; // auto picks Medium until M4.7 detects hardware
   bindings: Bindings;
 }
 
-// MASTER_PLAN §3.8
+// MASTER_PLAN §3.8. Mouse codes use MouseEvent.button: 0 left, 1 middle, 2 right.
 export const DEFAULT_BINDINGS: Bindings = {
   moveForward: ['KeyW', 'ArrowUp'], moveBack: ['KeyS', 'ArrowDown'], moveLeft: ['KeyA', 'ArrowLeft'], moveRight: ['KeyD', 'ArrowRight'],
   sprint: ['ShiftLeft', ''], crouch: ['KeyC', 'ControlLeft'], leanLeft: ['KeyQ', ''], leanRight: ['KeyE', ''],
-  interact: ['Mouse0', ''], throw: ['Mouse1', ''], flashlight: ['KeyF', ''], scanner: ['KeyR', ''], journal: ['Tab', ''],
+  interact: ['Mouse0', ''], throw: ['Mouse2', ''], flashlight: ['KeyF', ''], scanner: ['KeyR', ''], journal: ['Tab', ''],
 };
 
 export const DEFAULT_SETTINGS: Settings = {
-  version: 1, mouseSensitivity: 12, invertY: false, gamepadLookSpeed: 140, crouchToggle: false, headBob: true, bindings: DEFAULT_BINDINGS,
+  version: 1, mouseSensitivity: 12, invertY: false, gamepadLookSpeed: 140, crouchToggle: false, headBob: true, fov: 72, quality: 'auto', bindings: DEFAULT_BINDINGS,
 };
 
 /** Codes that can never be bound: Escape releases the pointer and pauses (browser rule, §3.8). */
@@ -56,6 +58,8 @@ export function mergeSettings(saved: unknown): Settings {
     gamepadLookSpeed: num(s.gamepadLookSpeed, DEFAULT_SETTINGS.gamepadLookSpeed, 20, 400),
     crouchToggle: typeof s.crouchToggle === 'boolean' ? s.crouchToggle : DEFAULT_SETTINGS.crouchToggle,
     headBob: typeof s.headBob === 'boolean' ? s.headBob : DEFAULT_SETTINGS.headBob,
+    fov: num(s.fov, DEFAULT_SETTINGS.fov, 55, 100),
+    quality: (['auto', 'low', 'medium', 'high', 'ultra'] as const).includes(s.quality as Settings['quality']) ? s.quality as Settings['quality'] : DEFAULT_SETTINGS.quality,
     bindings,
   };
 }

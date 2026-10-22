@@ -13,10 +13,29 @@
     #prompt { position: fixed; left: 50%; bottom: 18%; transform: translateX(-50%); color: #e8e1d4; font: clamp(12px, 1.7vh, 20px)/1.3 system-ui, sans-serif; text-shadow: 0 1px 3px #000; pointer-events: none; }
     #debug-overlay { position: fixed; right: 8px; top: 8px; max-width: 46ch; padding: 8px 10px; background: rgba(0,0,0,0.6); color: #cfc; font: 11px/1.4 ui-monospace, monospace; pointer-events: none; }
     #debug-overlay ol { margin: 4px 0 0; padding-left: 1.4em; }
-    #pause { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; background: rgba(3,3,4,0.55); color: #e8e1d4; font: clamp(14px, 2vh, 22px)/1.5 system-ui, sans-serif; pointer-events: none; }
-    #pause[hidden] { display: none; }
-    #pause h1 { margin: 0 0 0.3em; font-size: 1.6em; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
-    #pause .keys { opacity: 0.7; font-size: 0.8em; }
+    /* menus (M1.6): sizes follow the window height, so they read the same on every laptop (D-008) */
+    #loading, #menus.open { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(3,3,4,0.72); color: #e8e1d4; font: clamp(13px, 1.9vh, 22px)/1.5 system-ui, sans-serif; }
+    #loading { flex-direction: column; background: #050506; }
+    #loading .bar { width: min(60vw, 420px); height: 3px; background: #222; margin: 1em 0; }
+    #loading .bar i { display: block; height: 100%; width: 0; background: #e8dcc4; transition: width 0.2s; }
+    .menu { text-align: center; max-height: 92vh; overflow: auto; padding: 1em 2em; }
+    .menu[hidden] { display: none; }
+    .menu.wide { width: min(92vw, 52em); text-align: left; }
+    .menu h1, #loading h1 { margin: 0 0 0.4em; font-size: 1.8em; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+    .menu h2 { font-size: 1em; margin: 1.2em 0 0.4em; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+    .menu .sub, .menu .keys { opacity: 0.65; font-size: 0.8em; }
+    .menu > button { display: block; margin: 0.45em auto; min-width: 12em; padding: 0.55em 1.2em; font: inherit; color: #111; background: #e8dcc4; border: 0; border-radius: 3px; cursor: pointer; }
+    .menu.wide > button { display: inline-block; margin: 1em 0.6em 0 0; min-width: 0; }
+    .menu > button:hover, .menu > button:focus-visible { background: #fff3dc; outline: none; }
+    .menu .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); gap: 0.8em 1.6em; }
+    .menu label { display: flex; flex-direction: column; gap: 0.3em; }
+    .menu label.check { flex-direction: row; align-items: center; }
+    .menu input[type=range] { width: 100%; }
+    .menu select, .menu .bind { font: inherit; font-size: 0.9em; padding: 0.25em 0.5em; color: #e8e1d4; background: #1a1a1e; border: 1px solid #3a3a42; border-radius: 3px; }
+    .menu table { border-collapse: collapse; width: 100%; font-size: 0.9em; }
+    .menu th { text-align: left; font-weight: 400; padding: 0.2em 0.6em 0.2em 0; }
+    .menu td { padding: 0.2em 0.3em; }
+    .menu .bind { width: 100%; cursor: pointer; }
     #bench-results { position: fixed; inset: 0; overflow: auto; box-sizing: border-box; padding: clamp(16px, 4vh, 48px); background: rgba(5,5,6,0.92); color: #d8d2c6; font: 15px/1.5 system-ui, sans-serif; }
     #bench-results .big { font-size: clamp(16px, 2.4vh, 26px); color: #fff3dc; }
     #bench-results pre { max-width: 100%; overflow: auto; padding: 12px; background: #111114; border: 1px solid #2a2a30; font: 12px/1.45 ui-monospace, monospace; }
@@ -28,7 +47,7 @@
 <body>
   <div id="hud"></div>
   <div id="prompt"></div>
-  <div id="pause" hidden><div><h1>Listening Post</h1><p>Click to play</p><p class="keys">WASD: move · Shift: sprint · C: crouch · Q/E: lean · F: flashlight · Esc: pause · Alt+Enter: fullscreen</p></div></div>
+  <div id="loading"><h1>Listening Post</h1><div class="bar"><i></i></div><p>Loading…</p></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

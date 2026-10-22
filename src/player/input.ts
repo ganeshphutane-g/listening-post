@@ -41,7 +41,7 @@ export class Input {
       if (!e.repeat) this.press(e.code);
     });
     addEventListener('keyup', (e) => this.down.delete(e.code));
-    target.addEventListener('mousedown', (e) => { if (this.locked) this.press(`Mouse${e.button}`); else void this.lock(); });
+    target.addEventListener('mousedown', (e) => { if (this.locked) this.press(`Mouse${e.button}`); }); // locking is the menus' job (M1.6)
     addEventListener('mouseup', (e) => this.down.delete(`Mouse${e.button}`));
     target.addEventListener('contextmenu', (e) => e.preventDefault());
     addEventListener('mousemove', (e) => { if (this.locked) { this.lookDx += e.movementX; this.lookDy += e.movementY; } });

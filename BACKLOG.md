@@ -78,7 +78,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: unit test of the loudness table; event log in debug overlay.
   - Needs: M1.4
   - Est: 1 run
-- [ ] M1.6 Menus and loading
+- [x] M1.6 Menus and loading
   - Do: Title (grants pointer lock and audio), pause, settings, loading progress, quality tier selection.
   - Accept: scenario walks every menu; settings persist after reload.
   - Needs: M1.5
