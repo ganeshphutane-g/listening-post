@@ -26,6 +26,7 @@ import { installDisplay } from './render/display';
 import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device';
 import { loadSettings } from './core/settings';
 import { Input } from './player/input';
+import { CharacterController } from './player/controller';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -172,6 +173,8 @@ const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 const fixed = (hx: number, hy: number, hz: number, x: number, y: number, z: number) => world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z));
 fixed(2, 0.1, 12, 0, -0.1, -10); fixed(0.1, 1.6, 12, -2.1, 1.5, -10); fixed(0.1, 1.6, 12, 2.1, 1.5, -10);
 for (const z of [-4, -10, -16]) for (const x of [-1.75, 1.75]) fixed(0.25, 1.5, 0.25, x, 1.5, z);
+fixed(2.2, 1.6, 0.1, 0, 1.5, 2.1); fixed(2.2, 1.6, 0.1, 0, 1.5, -22.1); fixed(2, 0.1, 12, 0, 3.1, -10); // end walls, ceiling
+fixed(0.3, 0.95, 0.6, 1.65, 0.95, -12.8); fixed(0.3, 0.55, 0.3, -1.65, 0.55, -18.5); // filing cabinets
 const crateMesh = (await gltf.loadAsync('./assets/crate.glb')).scene;
 crateMesh.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = o.receiveShadow = true; } });
 const crates: { body: RAPIER.RigidBody; mesh: THREE.Object3D }[] = [];
@@ -209,22 +212,41 @@ const lit = colorTex.add(reflections.rgb.mul(0.8)).add(fog.mul(0.9));
 const glow = bloom(lit, 0.3, 0.4, 0.85);
 pipeline.outputNode = NOPOST ? colorTex : smaa(film(lit.add(glow), uniform(0.22)));
 
-// ---------- input: pointer-lock mouse look and gamepad (M1.1); walking comes with the controller (M1.2) ----------
-const input = new Input(renderer.domElement, loadSettings());
+// ---------- input (M1.1) and the player's body (M1.2) ----------
+const settings = loadSettings();
+const input = new Input(renderer.domElement, settings);
+const player = new CharacterController(RAPIER, world, { x: 0.35, y: 0, z: 1.2 });
+player.headBob = settings.headBob;
+let crouchLatched = false;
 const pauseOverlay = document.getElementById('pause')!;
 const showPause = (paused: boolean) => { pauseOverlay.hidden = !paused || params.has('bench'); }; // DOM only: never in harness stills
 input.onPauseChange = showPause;
 showPause(input.paused);
 const look = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(camera.quaternion);
 const MAX_PITCH = THREE.MathUtils.degToRad(85);
-function applyInput(dt: number) {
+const STEP = 1 / 60; // fixed simulation step (§4.3); rendering runs every animation frame
+let acc = 0;
+function simulate(dt: number) {
   const pad = input.pollGamepad();
   const { yaw, pitch } = input.look(dt, pad);
   look.y += yaw;
   look.x = THREE.MathUtils.clamp(look.x + pitch, -MAX_PITCH, MAX_PITCH);
-  camera.quaternion.setFromEuler(look);
   if (input.wasPressed('flashlight')) torch.visible = !torch.visible; // battery and flicker come in M1.3
+  if (settings.crouchToggle) { if (input.wasPressed('crouch')) crouchLatched = !crouchLatched; } else crouchLatched = input.isDown('crouch');
+  const move = input.move(pad);
+  const intent = { x: move.x, y: move.y, sprint: input.isDown('sprint'), crouch: crouchLatched,
+    lean: (input.isDown('leanRight') ? 1 : 0) - (input.isDown('leanLeft') ? 1 : 0) };
   input.endFrame();
+  acc = Math.min(acc + dt, STEP * 5); // after a long stall, catch up at most 5 steps instead of spiralling
+  while (acc >= STEP) {
+    player.step(intent, look.y, STEP);
+    tick(true);
+    acc -= STEP;
+  }
+  const eye = player.eye(look.y);
+  camera.position.set(eye.x, eye.y, eye.z);
+  look.z = eye.roll;
+  camera.quaternion.setFromEuler(look);
 }
 
 // ---------- loop ----------
@@ -244,9 +266,8 @@ if (HARNESS) {
 } else {
   let last = performance.now();
   renderer.setAnimationLoop((now: number) => {
-    applyInput(Math.min(0.1, (now - last) / 1000));
+    simulate(Math.min(0.1, (now - last) / 1000));
     last = now;
-    tick(true);
     pipeline.render();
     hud.textContent = `${backend}  frame ${++frame}`;
   });

@@ -58,7 +58,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: unit tests for mapping; scenario: pointer lock released on Esc opens pause.
   - Needs: all M0 items (including M0.9)
   - Est: 1 run
-- [ ] M1.2 Character controller
+- [x] M1.2 Character controller
   - Do: Walk, sprint with stamina, crouch, lean, stairs and slopes, head-bob toggle, footstep cadence.
   - Accept: scenarios for step height, slope limit, crouch under a 1.2 m beam.
   - Needs: M1.1

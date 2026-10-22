@@ -1,0 +1,36 @@
+{
+  "note": "Character controller tuning (MASTER_PLAN \u00a74.6, M1.2). Metres, seconds, degrees. Sessions tune these numbers here, not in code (\u00a74.3).",
+  "radius": 0.28,
+  "standHeight": 1.75,
+  "crouchHeight": 1.05,
+  "eyeBelowTop": 0.1,
+  "walkSpeed": 1.6,
+  "sprintSpeed": 3.4,
+  "crouchSpeed": 0.85,
+  "acceleration": 12,
+  "gravity": 9.81,
+  "stepHeight": 0.35,
+  "maxSlopeDeg": 45,
+  "snapToGround": 0.3,
+  "crouchTransitionSpeed": 4,
+  "stamina": {
+    "seconds": 6,
+    "regenPerSecond": 0.2,
+    "regenDelay": 1.5,
+    "minToSprint": 0.25
+  },
+  "lean": {
+    "offset": 0.32,
+    "rollDeg": 10,
+    "speed": 6
+  },
+  "headBob": {
+    "amplitude": 0.035,
+    "sway": 0.02
+  },
+  "strideLength": {
+    "walk": 0.72,
+    "sprint": 1.05,
+    "crouch": 0.5
+  }
+}

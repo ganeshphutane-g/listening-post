@@ -15,6 +15,7 @@ export interface Settings {
   invertY: boolean;
   gamepadLookSpeed: number; // degrees per second at full stick
   crouchToggle: boolean;
+  headBob: boolean; // motion effects can be turned off (§1 accessibility)
   bindings: Bindings;
 }
 
@@ -26,7 +27,7 @@ export const DEFAULT_BINDINGS: Bindings = {
 };
 
 export const DEFAULT_SETTINGS: Settings = {
-  version: 1, mouseSensitivity: 12, invertY: false, gamepadLookSpeed: 140, crouchToggle: false, bindings: DEFAULT_BINDINGS,
+  version: 1, mouseSensitivity: 12, invertY: false, gamepadLookSpeed: 140, crouchToggle: false, headBob: true, bindings: DEFAULT_BINDINGS,
 };
 
 /** Codes that can never be bound: Escape releases the pointer and pauses (browser rule, §3.8). */
@@ -54,6 +55,7 @@ export function mergeSettings(saved: unknown): Settings {
     invertY: typeof s.invertY === 'boolean' ? s.invertY : DEFAULT_SETTINGS.invertY,
     gamepadLookSpeed: num(s.gamepadLookSpeed, DEFAULT_SETTINGS.gamepadLookSpeed, 20, 400),
     crouchToggle: typeof s.crouchToggle === 'boolean' ? s.crouchToggle : DEFAULT_SETTINGS.crouchToggle,
+    headBob: typeof s.headBob === 'boolean' ? s.headBob : DEFAULT_SETTINGS.headBob,
     bindings,
   };
 }
