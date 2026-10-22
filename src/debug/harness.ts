@@ -9,6 +9,7 @@ import { packReadback } from '../render/readback';
 import type { DisplayState } from '../render/display';
 import type { Input } from '../player/input';
 import { controllerScenarios } from './controllerScenarios';
+import { interactionScenarios } from './interactionScenarios';
 
 export interface Stop { name: string; pos: [number, number, number]; target: [number, number, number] }
 export interface ScenarioResult { name: string; pass: boolean; detail: string }
@@ -64,6 +65,7 @@ export function installHarness(ctx: HarnessContext): void {
 
   const scenarios: Record<string, () => ScenarioResult> = {
     ...controllerScenarios(ctx.rapier, ctx.world),
+    ...interactionScenarios(ctx.rapier, ctx.world),
     'pause-on-pointer-release': () => {
       // M1.1: releasing pointer lock (Esc, alt-tab) pauses and shows the overlay; locking resumes.
       // Real pointer lock needs a user gesture, so the scenario drives the same handler the browser event calls.

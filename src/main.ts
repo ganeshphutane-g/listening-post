@@ -28,6 +28,7 @@ import { loadSettings } from './core/settings';
 import { Input } from './player/input';
 import { CharacterController } from './player/controller';
 import { Flashlight } from './player/flashlight';
+import { Interaction } from './player/interaction';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -171,11 +172,12 @@ fixed(0.3, 0.95, 0.6, 1.65, 0.95, -12.8); fixed(0.3, 0.55, 0.3, -1.65, 0.55, -18
 const crateMesh = (await gltf.loadAsync('./assets/crate.glb')).scene;
 crateMesh.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = o.receiveShadow = true; } });
 const crates: { body: RAPIER.RigidBody; mesh: THREE.Object3D }[] = [];
+const crateColliders: RAPIER.Collider[] = [];
 const spots = [[-1.2, 0.5, -5.5], [-1.2, 1.45, -5.5], [-0.22, 0.5, -5.6], [1.2, 0.9, -8.5], [1.1, 2.3, -8.4], [-0.9, 2.4, -12]];
 spots.forEach(([x, y, z], i) => {
   const body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y, z)
     .setRotation(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, (i * 0.37) % 0.8 - 0.4, 0))));
-  world.createCollider(RAPIER.ColliderDesc.cuboid(0.45, 0.45, 0.45).setDensity(35), body);
+  crateColliders.push(world.createCollider(RAPIER.ColliderDesc.cuboid(0.45, 0.45, 0.45).setDensity(35), body));
   const mesh = crateMesh.clone();
   scene.add(mesh);
   crates.push({ body, mesh });
@@ -211,6 +213,11 @@ const input = new Input(renderer.domElement, settings);
 const player = new CharacterController(RAPIER, world, { x: 0.35, y: 0, z: 1.2 });
 player.headBob = settings.headBob;
 let crouchLatched = false;
+const interaction = new Interaction(RAPIER, world, player.collider);
+crates.forEach(({ body }, i) => interaction.register(crateColliders[i], { kind: 'prop', body })); // ~25 kg: dragged, not lifted
+const prompt = document.getElementById('prompt')!;
+let throwHeld = false;
+const viewDir = () => ({ x: -Math.sin(look.y) * Math.cos(look.x), y: Math.sin(look.x), z: -Math.cos(look.y) * Math.cos(look.x) });
 const pauseOverlay = document.getElementById('pause')!;
 const showPause = (paused: boolean) => { pauseOverlay.hidden = !paused || params.has('bench'); }; // DOM only: never in harness stills
 input.onPauseChange = showPause;
@@ -229,10 +236,20 @@ function simulate(dt: number) {
   const move = input.move(pad);
   const intent = { x: move.x, y: move.y, sprint: input.isDown('sprint'), crouch: crouchLatched,
     lean: (input.isDown('leanRight') ? 1 : 0) - (input.isDown('leanLeft') ? 1 : 0) };
+  // interaction (M1.4): hold the interact button to carry or drag, the throw button to charge a throw
+  const eyeNow = camera.position, dir = viewDir();
+  if (input.wasPressed('interact')) interaction.begin(eyeNow, dir);
+  if (!input.isDown('interact') && interaction.held) interaction.end();
+  if (input.wasPressed('throw')) interaction.startThrow();
+  if (throwHeld && !input.isDown('throw')) interaction.releaseThrow(dir);
+  throwHeld = input.isDown('throw');
+  const focus = interaction.held ? null : interaction.focus(eyeNow, dir);
+  prompt.textContent = interaction.held ? (interaction.held.item.kind === 'prop' ? 'Right mouse: throw' : '') : focus ? (focus.item.kind === 'door' ? 'Hold left mouse: open' : focus.item.kind === 'drawer' ? 'Hold left mouse: pull' : 'Hold left mouse: grab') : '';
   input.endFrame();
   acc = Math.min(acc + dt, STEP * 5); // after a long stall, catch up at most 5 steps instead of spiralling
   while (acc >= STEP) {
     player.step(intent, look.y, STEP);
+    interaction.hold(camera.position, viewDir(), STEP);
     tick(true);
     acc -= STEP;
   }

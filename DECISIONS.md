@@ -114,3 +114,10 @@ Format: MASTER_PLAN §8.6. Newest at the bottom.
 - Alternatives: a cookie map with the frustum widened (the square stays); a TSL `colorNode` (same frustum select); no pattern (a flat disc reads as a game light, not a torch).
 - Consequences: the beam pattern is radial only (no smudges across it); fine for a reflector. Tour, lightmap-view and responsive baselines were regenerated for the new beam on 2026-10-22.
 - Revisit when: a non-radial pattern (cracked lens, filament shadow) is wanted, or three.js changes how spot maps are clipped.
+
+## 2026-10-22 D-017 Interaction: hand point along the view; joint motors drag doors and drawers; spring-carried props
+- Context: M1.4 needs a focus ray, carrying, inspecting, dragging, throwing by hold time, hinged doors dragged by hand, and drawers that stop at their limits.
+- Decision: the "hand" is a point a fixed distance along the view (the grab distance for doors and drawers, 1.1 m for carried props). Doors are dynamic bodies on revolute joints (0–110°) and drawers on prismatic joints (0–travel); while held, the joint's position motor chases the hand's angle or slide position, and on release only a friction motor remains, so joint limits always hold. Props follow the hand on a velocity spring capped at 6 m/s; anything over 20 kg is dragged along the floor at a stiffness scaled by its mass. Throw speed rises with hold time (0.8 s to full) from 2.5 to 9 m/s and falls with the square root of mass. The corridor's ~25 kg crates are props, so they drag. A prompt names the action under the crosshair. Inspect-and-rotate is left to M1.7's Feel Lab, where inspectable objects exist.
+- Alternatives: a fixed joint to a kinematic hand (rigid, lets the player shove anything with infinite force); mouse-delta torque on doors (Amnesia-style; worth trying after playtest 1).
+- Consequences: scenarios pass on both backends: a door walked open reaches 80° and stops at 110°; a full throw of 1 kg lands 4.77 m away (tuned range 3.5–7.5 m); a drawer stops at 0.400 m out and 0.000 m in. To push a door open the player walks with it or turns.
+- Revisit when: playtest 1 (M1.7) says doors feel wrong.

@@ -68,7 +68,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: tour frame shows the cookie pattern; unit test drains a full battery in 900 s of on-time (tunable)
   - Needs: M1.2
   - Est: 1 run
-- [ ] M1.4 Interaction
+- [x] M1.4 Interaction
   - Do: Focus ray, pick up, inspect and rotate, drag via joint, throw by hold time, doors on hinges with hand drag, drawers.
   - Accept: scenarios: door opens by drag; throw distance within tuning range; drawers stop at limits.
   - Needs: M1.3
