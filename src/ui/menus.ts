@@ -35,6 +35,7 @@ export class Menus {
     this.root.innerHTML = `
       <section id="title" class="menu" hidden><h1>Listening Post</h1><p class="sub">Station K-7 · 1978</p>
         <button id="btn-play">Play</button><button id="btn-title-settings">Settings</button>
+        <p id="lock-refused" class="warn" hidden>Your browser did not let the game capture the mouse. Click Play again; if it keeps happening, check that this page is allowed to use the pointer.</p>
         <p class="keys">WASD move · Shift sprint · C crouch · Q/E lean · Left mouse grab · Right mouse throw · F flashlight · Esc pause · Alt+Enter fullscreen</p></section>
       <section id="pause" class="menu" hidden><h1>Paused</h1>
         <button id="btn-resume">Resume</button><button id="btn-pause-settings">Settings</button><button id="btn-quit">Quit to title</button></section>
@@ -95,7 +96,9 @@ export class Menus {
 
   private play(): void {
     void this.o.audio.resume(); // browsers start audio only from a user gesture (§4.10)
-    void this.o.input.lock();
+    void this.o.input.lock().then((ok) => {
+      for (const id of ['lock-refused']) (this.root.querySelector(`#${id}`) as HTMLElement).hidden = ok;
+    });
   }
 
   private openSettings(from: Screen): void { this.from = from; this.renderSettings(); this.show('settings'); }

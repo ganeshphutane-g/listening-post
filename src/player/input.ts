@@ -31,6 +31,8 @@ export class Input {
   private padPausePrev = false;
   private padActive = new Set<Action>();
   locked = false;
+  /** ?nolock=1: play without capturing the mouse (browsers that refuse pointer lock, automated playtests) */
+  readonly noLock = new URLSearchParams(location.search).has('nolock');
   paused = true; // until the first click grants pointer lock (and audio, M1.6)
   onPauseChange: (paused: boolean) => void = () => {};
 
@@ -38,6 +40,7 @@ export class Input {
     this.byCode = actionsByCode(settings.bindings);
     addEventListener('keydown', (e) => {
       if (e.code === 'Tab' && this.locked) e.preventDefault(); // Tab is the journal, not focus traversal
+      if (e.code === 'Escape' && this.noLock && this.locked) { this.setLocked(false); return; } // without a real lock the browser does not release anything
       if (!e.repeat) this.press(e.code);
     });
     addEventListener('keyup', (e) => this.down.delete(e.code));
@@ -51,13 +54,17 @@ export class Input {
   }
 
   /** Raw (unaccelerated) mouse where supported; Safari and older Firefox reject the option, so retry without it. */
-  async lock(): Promise<void> {
+  async lock(): Promise<boolean> {
+    if (this.noLock) { this.setLocked(true); return true; }
     const el = this.target as HTMLElement & { requestPointerLock(o?: { unadjustedMovement?: boolean }): Promise<void> | void };
     try {
       await el.requestPointerLock({ unadjustedMovement: true });
     } catch {
-      try { await el.requestPointerLock(); } catch { /* denied: the overlay stays and asks again */ }
+      try { await el.requestPointerLock(); } catch { return false; } // denied: the menu says so and asks again
     }
+    // some browsers resolve without locking (or never return a promise); check what actually happened
+    await new Promise((r) => setTimeout(r, 300));
+    return document.pointerLockElement === this.target;
   }
 
   setSettings(settings: Settings): void {
