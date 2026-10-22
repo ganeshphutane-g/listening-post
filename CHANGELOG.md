@@ -7,3 +7,4 @@
 - 2026-10-22 M0.3: Electron harness (`shoot`, `tour`, `scenarios`, `bench`, `selftest`) with a test clock, render-target readback, pixelmatch diffs against per-platform baselines; `npm run verify` now runs it (13 s on the M1).
 - 2026-10-22 M0.9: responsive display — resize, pixel ratio capped by tier budget, Hor+ field of view, interface scaling, Alt+Enter fullscreen, phone/tablet notice; harness `responsive` command checks 7 window sizes at 1× and 2× on both backends. Fixed WebGPU readback striping on widths that are not a multiple of 64 px.
 - 2026-10-22 M0.4: lightmap ships as half-float KTX2 + Zstandard (1525 KB, identical frames to the EXR); `bootstrap.sh --ktx` installs ktx 4.4.2 with pinned checksums; lightmap debug view toured against baselines; UV flip removed.
+- 2026-10-22 M0.5: `content/asset_manifest.json` v1 (12 materials, 4 HDRIs, Poly Haven CC0); `tools/fetch_assets.py` for the owner's computer (dry run: 40 files, 595 MB); ledger check in verify.

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "note": "Assets fetched on the OWNER's computer by tools/fetch_assets.py (asset sites are blocked in build sessions, MASTER_PLAN §6.1). Raw files land in assets_src/ (not in git); M4.3 turns them into KTX2 game files. Poly Haven assets are CC0; the API asks for a 'Powered by Poly Haven' credit, which the credits screen carries (M6.5).",
+  "credit": "Powered by Poly Haven",
+  "materials": [
+    { "ledger": "A-0101", "source": "polyhaven", "id": "concrete_wall_008", "use": "L1-L3 poured concrete walls" },
+    { "ledger": "A-0102", "source": "polyhaven", "id": "concrete_floor_worn_001", "use": "L1-L2 corridor floors" },
+    { "ledger": "A-0103", "source": "polyhaven", "id": "painted_concrete", "use": "guard post and power room floors" },
+    { "ledger": "A-0104", "source": "polyhaven", "id": "hangar_concrete_floor", "use": "L2 signals hall, generator gallery" },
+    { "ledger": "A-0105", "source": "polyhaven", "id": "damaged_concrete_floor", "use": "L3 pump rooms (wet layer on top)" },
+    { "ledger": "A-0106", "source": "polyhaven", "id": "peeling_painted_wall", "use": "records office, dormitory walls" },
+    { "ledger": "A-0107", "source": "polyhaven", "id": "rusty_metal_02", "use": "L3 pipes, cable vaults" },
+    { "ledger": "A-0108", "source": "polyhaven", "id": "metal_plate", "use": "floor plates, catwalks" },
+    { "ledger": "A-0109", "source": "polyhaven", "id": "green_metal_rust", "use": "cabinets, consoles, lockers (bloc green)" },
+    { "ledger": "A-0110", "source": "polyhaven", "id": "painted_metal_shutter", "use": "blast doors, shutters" },
+    { "ledger": "A-0111", "source": "polyhaven", "id": "old_linoleum_flooring_01", "use": "mess hall, dormitory floors" },
+    { "ledger": "A-0112", "source": "polyhaven", "id": "floor_tiles_06", "use": "washroom floors and walls" }
+  ],
+  "materialMaps": { "res": "2k", "maps": { "Diffuse": "png", "nor_gl": "png", "arm": "png" } },
+  "hdris": [
+    { "ledger": "A-0201", "source": "polyhaven", "id": "concrete_tunnel", "use": "reflections: L1 entry tunnel" },
+    { "ledger": "A-0202", "source": "polyhaven", "id": "debris_basement_corridor", "use": "reflections: L1 corridors" },
+    { "ledger": "A-0203", "source": "polyhaven", "id": "industrial_pipe_and_valve_01", "use": "reflections: L2 power room, L3 pump rooms" },
+    { "ledger": "A-0204", "source": "polyhaven", "id": "boiler_room", "use": "reflections: L2 generator gallery" }
+  ],
+  "hdriFiles": { "res": "2k", "format": "exr" }
+}

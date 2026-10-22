@@ -27,7 +27,9 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server (WebGPU needs localhost or https) |
-| `npm run verify` | type check, unit tests, build, JS gzip budget, harness self-test, scenarios, screenshot tour (MASTER_PLAN §8.8) |
+| `npm run verify` | type check, unit tests, build, JS gzip budget, asset ledger check, harness self-test, scenarios, screenshot tours, responsive check (MASTER_PLAN §8.8) |
+| `npm run check:assets` | every file in `public/assets/` has a ledger row with an allowed licence and is ≤ 25 MiB |
+| `python3 tools/fetch_assets.py --dry-run` | list the source assets in `content/asset_manifest.json` (owner's computer only: asset sites are blocked in sessions) |
 | `npm run tour` / `npm run scenarios` / `npm run bench` | one harness command (needs `npm run build` first); options after `--`: `--backend webgpu\|webgl\|both`, `--size 1280x720`, `--dpr 2`, `--mode native\|vulkan\|swiftshader`, `--update`, `--verbose` |
 | `npm run harness -- shoot [stop]` | one still per backend into `tests/visual/out/shoot/` |
 | `npm run tour -- --view lightmap` | tours the lightmap debug view against its own baselines (part of verify) |

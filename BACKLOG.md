@@ -25,7 +25,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: debug view matches the reference; encoded map within 2 MB per 1024²; no visible banding in the tour.
   - Needs: M0.3
   - Est: 1 run
-- [ ] M0.5 Asset routes
+- [x] M0.5 Asset routes
   - Do: `tools/fetch_assets.py` for the owner's computer; `content/asset_manifest.json` v1 (first 12 materials, 4 HDRIs); ledger and its check.
   - Accept: dry run lists files and licences; ledger check passes.
   - Needs: M0.4
