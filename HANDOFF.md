@@ -1,35 +1,36 @@
-# HANDOFF — 2026-10-21 20:15 IST — run 2 (scheduled, cloud session)
+# HANDOFF — 2026-10-22 14:15 IST — run 3 (interactive, owner's Mac, 2-hour build session)
 
-> **PAUSED by the owner on 2026-10-21.** Do not start any backlog item. If a run starts anyway, change nothing and stop. The routine "Listening Post daily build" is disabled; the owner will say when to resume (then re-enable it at https://claude.ai/code/routines/trig_01GDfwsaPBiuagjXtDGfS8EA and delete this line).
+> **PAUSED for scheduled runs (owner, 2026-10-21).** The routine "Listening Post daily build" stays disabled. On 2026-10-22 the owner asked for a 2-hour interactive build session; scheduled runs resume only when the owner says so (then re-enable it at https://claude.ai/code/routines/trig_01GDfwsaPBiuagjXtDGfS8EA and delete this line). If a scheduled run starts anyway, change nothing and stop.
 
 ## State
-- Milestone: M0 Pipeline — 3/8 items (M0.1, M0.2, M0.8)
-- Build: green — npm run verify: tsc strict OK; 4/4 unit tests; vite build OK; JS 2.03 MB gzip (limit 2.50 MB)
-- Preview: none (local only: `npm run dev`)
-- Repository: https://github.com/ganeshphutane-g/listening-post (public, branch `main`).
+- Milestone: M0 Pipeline — 7/9 items done (M0.1, M0.2, M0.3, M0.4, M0.5, M0.8, M0.9); M0.6 and M0.7 are built and wait for the owner's check
+- Build: green — npm run verify (45 s on the M1): tsc strict; 15/15 unit tests; build; JS 2.07 MB gzip (limit 2.50); asset ledger; harness self-test; scenarios; tour + lightmap-view tour (0.000% vs baselines); responsive at 7 sizes, 1× and 2×; benchmark page on both backends
+- Preview: https://ganeshphutane-g.github.io/listening-post/ (GitHub Pages, rebuilt on every push to `main`, D-013)
+- Repository: https://github.com/ganeshphutane-g/listening-post (public, branch `main`)
 
 ## This run
-- Item: M0.2 Bootstrap — DONE
+- Items: M0.3 Harness — DONE; M0.9 Responsive display — DONE (done before M0.4 at the owner's priority); M0.4 Lightmap pipeline — DONE; M0.5 Asset routes — DONE; M0.6 Preview channel — BUILT, owner check pending; M0.7 Benchmark — BUILT, owner results pending
 - Changes:
-  - `tools/bootstrap.sh`: apt (mesa-vulkan-drivers, vulkan-tools, xvfb, Electron's shared libs), `npm ci`, Electron 45.0.0 from the GitHub release with SHA-256 pinned in the script (D-006), into `.tools/` (git-ignored), linked at `.tools/bin/electron`; prints every tool version and fails if any step fails
-  - `--blender` installs bpy 5.2.2 into `.venv`; it needs Python 3.13 (D-007). `--no-apt` for the owner's computer. bash 3.2 compatible (macOS)
-  - CLAUDE.md and `shoot.cjs` document the cloud command: `xvfb-run -a .tools/bin/electron --no-sandbox tools/harness/shoot.cjs <url> <out.png> [mode]`
-- Evidence (cloud session, Ubuntu 24.04, 4 cores):
-  - Fresh run (no `node_modules`, `.tools`, `.venv`): exit 0 in 9 s with apt packages present; first run with the apt install 34 s; `--blender` adds ~30 s. Versions printed: node 22.22.0, npm 10.9.4, three 0.186.1, rapier 0.21.0, @pmndrs/assets 1.7.0, typescript 5.9.3, vite 8.3.5, vitest 5.0.5, electron 45.0.0, xvfb 21.1.12, mesa-vulkan 25.2.8 (llvmpipe), bpy 5.2.2 LTS
-  - Checksum check: a planted wrong hash made the run exit 1 with "checksum mismatch" and left nothing installed
-  - Electron harness, `?shot=1`, served by `vite preview`: WebGL2 cratesResting=true, CPU 4.6 ms/frame, 15 s; WebGPU cratesResting=true, CPU 9.8 ms/frame, 66 s
-  - Screenshots: `docs/screenshots/m0.2_cloud_webgpu.png`, `docs/screenshots/m0.2_cloud_webgl2.png` — looked at both: corridor, crates, lamp pool and red far glow present; the two backends match each other and the M0.1 Mac frames
+  - Harness (`tools/harness/run.mjs`, D-009): test clock makes frames identical run to run; commands `shoot`, `tour`, `scenarios`, `bench`, `benchpage`, `responsive`, `selftest`; fails on any page or GPU error; 10-minute watchdog; baselines per platform in `tests/visual/baselines/<platform>-<mode>/`
+  - Responsive display (`src/render/display.ts`, D-008, D-010): pixel ratio capped by the tier's pixel budget, Hor+ field of view between 4:3 and 21:9, interface text scales with height, Alt+Enter fullscreen, phone/tablet notice
+  - Lightmap (D-011): half-float KTX2 + Zstandard, 1525 KB; identical frames to the EXR; `bootstrap.sh --ktx`; UV flip removed (KTX2 rows are top-down)
+  - Assets (D-012): `content/asset_manifest.json` (12 materials, 4 HDRIs, CC0), `tools/fetch_assets.py` for the owner's computer, ledger check in verify
+  - Preview (D-013): `.github/workflows/pages.yml` builds and deploys every push to `main`
+  - Benchmark: `?bench=1` flies a 60 s path, then shows average FPS, 1% low, p95, draw calls, triangles, backend, GPU, build, with Copy and Download buttons
+- Bugs found and fixed: WebGPU stills striped on widths not a multiple of 64 px (three.js leaves the last readback row unpadded); Electron's `nativeImage` reads `@2x` file names as half-size Retina images (baselines now use `-dpr2`)
+- Evidence (MacBook Air M1, Metal): tour 0.000% on 5 stops × 2 backends; deliberate baseline swap fails at 40% with a diff image; planted page error caught; responsive buffers e.g. 1440×900@2× → 1821×1138, 3440×1440 → 2225×931 (Medium budget); benchmark page 60 FPS avg, 56 FPS 1% low, 68 draw calls, 61k triangles at 960×540 (vsync-capped)
 
 ## Next
-- M0.3 Harness — first unblocked item (needs M0.2, now done).
+- Owner: open the preview in Chrome and Safari, and run `?bench=1` and `?bench=1&webgl=1` in each (closes M0.6 and M0.7, and the M0 gate).
+- Then M1.1 Input (needs all M0 items).
 
 ## Known issues
-- In mode `webgpu-vulkan` the WebGPU adapter reports `google / swiftshader`, not lavapipe, although `vulkaninfo` sees llvmpipe. Rendering is correct, just slow (66 s per shot). M0.3 should find out whether lavapipe can be used and add a `native` mode for macOS.
-- Electron run as root needs `--no-sandbox` on the command line (the `appendSwitch` in `shoot.cjs` comes too late).
-- `tools/harness/shoot.cjs` modes are Linux-oriented; on macOS pass any mode other than `webgpu-vulkan`/`webgpu-swiftshader` to use the native Metal adapter.
-- Browser pane / hidden tabs pause requestAnimationFrame, so `?shot=1` stalls in a hidden tab. Use the Electron harness (backgroundThrottling off).
-- Vite warns that the main chunk is over 4000 kB raw (the HDRI is inlined as base64). Within budget; revisit in M0.4/M6.2.
-- Visual baselines are not stored yet (M0.3). The screenshots so far are reference images, not baselines.
+- No `linux-vulkan` baselines yet: the first cloud run creates them (the run passes) and must commit them. Cloud WebGPU runs on SwiftShader and is slow (about 66 s per still in M0.2); `npm run verify` there may take several minutes.
+- The harness `bench` command reports CPU encode time only; draw calls and triangles come from `benchpage`, because three.js resets `renderer.info` inside its own animation loop.
+- `bench` CPU numbers from the hidden harness window are not representative; use the owner's `?bench=1` files for budgets.
+- B10G11R11 lightmaps would halve lightmap GPU memory but ktx 4.4.2 writes corrupt texels for that format (D-011).
+- Raw Poly Haven sources live only on the owner's computer (§8.9), so M4.3 (materials to KTX2) must run there, or the owner commits processed files.
+- Vite warns the main chunk is over 4000 kB raw (HDRI inlined as base64). Within budget; revisit in M6.2.
 
 ## Owner setup (answered 2026-10-21)
 - Claude plan: Max ($100 tier), using Opus 5.5. Build runs stay on Opus 5.5; Fable only for a rare architecture or AI design review (MASTER_PLAN §12).
@@ -40,8 +41,9 @@
 - Target devices (owner, 2026-10-21): laptops and desktops only, Mac and Windows, every major browser; responsive to any window. Built in M0.9 (D-008).
 
 ## Questions for you
-- none
+- Please open https://ganeshphutane-g.github.io/listening-post/ in Chrome and in Safari: does it show the corridor? Then add `?bench=1` to the address, wait 62 s, press Download file; repeat with `?bench=1&webgl=1`. Send the four files.
+- Shall I run `python3 tools/fetch_assets.py` on this Mac (downloads 595 MB of CC0 Poly Haven textures into `assets_src/`, not into git)? It is needed before the art pass (M4.3), not before.
 
 ## Usage note
-- Run size (self-estimate): small
+- Run size (self-estimate): large (2-hour interactive session)
 - Owner's weekly usage reading after this run: <filled by owner>

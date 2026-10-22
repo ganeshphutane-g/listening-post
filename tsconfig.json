@@ -23,7 +23,6 @@
   "include": [
     "src",
     "tests",
-    "content",
-    "vite.config.ts"
+    "content"
   ]
 }

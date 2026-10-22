@@ -9,3 +9,4 @@
 - 2026-10-22 M0.4: lightmap ships as half-float KTX2 + Zstandard (1525 KB, identical frames to the EXR); `bootstrap.sh --ktx` installs ktx 4.4.2 with pinned checksums; lightmap debug view toured against baselines; UV flip removed.
 - 2026-10-22 M0.5: `content/asset_manifest.json` v1 (12 materials, 4 HDRIs, Poly Haven CC0); `tools/fetch_assets.py` for the owner's computer (dry run: 40 files, 595 MB); ledger check in verify.
 - 2026-10-22 M0.6: GitHub Pages preview built by Actions on every push to `main`: https://ganeshphutane-g.github.io/listening-post/ (owner check in Chrome and Safari pending).
+- 2026-10-22 M0.7: in-game benchmark `?bench=1` (60 s path; FPS, 1% low, p95, draw calls, triangles, backend, GPU, build; copy and download); harness `benchpage` checks it in verify (owner results pending).

@@ -1,7 +1,7 @@
 // Browser pipeline test: Blender-baked lightmap + real-time flashlight shadows + volumetric fog
 // + screen-space reflections + bloom + film grain (three.js r186, WebGPU with WebGL2 fallback)
 // + Rapier physics crates. URL params: ?webgl=1 (force WebGL2), ?harness=1 (driven by tools/harness/run.mjs),
-// ?view=lightmap|uv (debug views), ?nopost=1
+// ?bench=1 (60 s benchmark), ?view=lightmap|uv (debug views), ?nopost=1
 import { HARNESS } from './debug/clock'; // first: swaps in the test clock before anything renders
 import * as THREE from 'three/webgpu';
 import {
@@ -21,6 +21,7 @@ import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { installHarness } from './debug/harness';
+import { runBench } from './debug/bench';
 import { installDisplay } from './render/display';
 import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
@@ -218,6 +219,8 @@ function tick(physics: boolean) {
 syncCrates();
 if (HARNESS) {
   installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display });
+} else if (params.has('bench')) {
+  runBench({ renderer, pipeline, camera, backend, isWebGPU, tick, display });
 } else {
   renderer.setAnimationLoop(() => {
     tick(true);

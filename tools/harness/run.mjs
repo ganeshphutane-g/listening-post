@@ -5,7 +5,8 @@
 //   commands: shoot [stop]   one still per backend → tests/visual/out/shoot/
 //             tour           every stop in tests/visual/tour.json, diffed against baselines
 //             scenarios      every page-side scenario (physics checks)
-//             bench          CPU frame time, draw calls, triangles (budgets come with M0.7 and §4.11)
+//             bench          CPU frame time, draw calls, triangles (budgets come with §4.11)
+//             benchpage      runs the real ?bench=N page (requestAnimationFrame, results panel) for 5 s
 //             responsive     resizes the running game through laptop window sizes (D-008, M0.9): no stretching,
 //                            pixel budget kept, frames render; then checks the phone/tablet notice
 //             selftest       loads a page that throws; passes only if the error is caught
@@ -155,6 +156,24 @@ async function run() {
     if (!caught) fail('selftest: the planted page error was not detected');
     else log('selftest: planted page error detected — harness fails runs on page errors');
     report.results.push({ planted: caught });
+  } else if (command === 'benchpage') {
+    for (const backend of BACKENDS) {
+      let result = null;
+      const onMsg = (e) => { if (e.message.startsWith('[bench] ')) result = JSON.parse(e.message.slice(8)); };
+      win.webContents.on('console-message', onMsg);
+      await win.loadURL(`${base}/?bench=5${backend === 'webgl' ? '&webgl=1' : ''}`);
+      const t0 = Date.now();
+      while (!result && !errors.length && Date.now() - t0 < 120000) await new Promise((r) => setTimeout(r, 250));
+      win.webContents.off('console-message', onMsg);
+      if (!result) { fail(`${backend}: benchmark page gave no result in 120 s (is requestAnimationFrame running?)`); break; }
+      const panel = await call(win, `!!document.querySelector('#bench-results #bench-copy') && !!document.querySelector('#bench-results #bench-save')`);
+      if (!panel) fail(`${backend}: results panel or its buttons are missing`);
+      const want = backend === 'webgl' ? 'WebGL2' : 'WebGPU';
+      if (result.backend !== want) fail(`${backend}: benchmark ran on ${result.backend}`);
+      for (const k of ['avgFps', 'low1Fps', 'p95Ms', 'drawCallsMax', 'trianglesMax', 'gpu', 'build']) if (result[k] === undefined || result[k] === 0) fail(`${backend}: result field ${k} is ${result[k]}`);
+      log(`${backend}: ${result.frames} frames, ${result.avgFps} FPS avg, ${result.low1Fps} FPS 1% low, p95 ${result.p95Ms} ms, ${result.drawCallsMax} draws, ${result.trianglesMax} tris, gpu "${result.gpu}", build ${result.build}`);
+      report.results.push(result);
+    }
   } else {
     const tour = JSON.parse(await readFile(join(ROOT, 'tests/visual/tour.json'), 'utf8')).stops;
     for (const backend of BACKENDS) {
@@ -208,6 +227,8 @@ async function run() {
           log(`${backend}/${label}: buffer ${d.bufferW}x${d.bufferH} (ratio ${d.pixelRatio.toFixed(2)}), fov ${d.fovV.toFixed(1)}° v / ${d.fovH.toFixed(1)}° h${problems.length ? '' : ' — ok'}`);
           report.results.push({ backend, size: label, ...d, problems, diff: cmp.diff });
         }
+      } else if (command === 'benchpage') {
+        throw new Error('benchpage runs once, outside the backend loop');
       } else if (command === 'bench') {
         const r = await call(win, 'window.__harness.bench()');
         log(`${backend}: ${JSON.stringify(r)}`);

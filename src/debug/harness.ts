@@ -96,13 +96,10 @@ export function installHarness(ctx: HarnessContext): void {
     },
     async bench(frames = 240) {
       const ms: number[] = [];
-      let drawCalls = 0, triangles = 0;
       for (let i = 0; i < frames; i++) {
         const t0 = realNow();
         frame(true);
         ms.push(realNow() - t0);
-        drawCalls = renderer.info.render.drawCalls;
-        triangles = renderer.info.render.triangles;
       }
       await readPixels(); // waits for the GPU to finish the queued frames
       const sorted = ms.slice(8).sort((a, b) => a - b);
@@ -110,7 +107,7 @@ export function installHarness(ctx: HarnessContext): void {
       return {
         backend: ctx.backend, frames,
         cpuMsAvg: +avg.toFixed(2), cpuMsP95: +sorted[Math.floor(sorted.length * 0.95)].toFixed(2),
-        drawCalls, triangles,
+        note: 'CPU encode time only; draw calls and triangles come from the benchmark page (benchpage), where three.js resets its counters per animation frame',
       };
     },
   };
