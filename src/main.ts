@@ -21,6 +21,8 @@ import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { flipLightmapV } from './render/lightmap';
 import { installHarness } from './debug/harness';
+import { installDisplay } from './render/display';
+import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -39,11 +41,12 @@ interface BackendInfo {
   };
 }
 
+if (isTouchOnly(readDeviceSignals())) {
+  showDeviceNotice();
+  await new Promise<never>(() => {}); // phones and tablets stop here (D-008); nothing below runs
+}
+
 const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: FORCE_WEBGL });
-renderer.setPixelRatio(1);
-// a hidden or collapsed host can report 0×0, and a zero-size swapchain invalidates every pass after it
-const viewSize = () => [Math.max(1, innerWidth), Math.max(1, innerHeight)] as const;
-renderer.setSize(...viewSize());
 renderer.toneMapping = THREE.AgXToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
@@ -61,16 +64,11 @@ log('backend', backend);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x020203);
-const camera = new THREE.PerspectiveCamera(72, viewSize()[0] / viewSize()[1], 0.05, 60);
+const camera = new THREE.PerspectiveCamera(72, 16 / 9, 0.05, 60); // fov and aspect set by installDisplay
 camera.position.set(0.35, 1.65, 1.2);
 camera.lookAt(-0.2, 1.35, -20);
 scene.add(camera);
-addEventListener('resize', () => {
-  const [w, h] = viewSize();
-  renderer.setSize(w, h);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-});
+const display = installDisplay(renderer, camera);
 
 // ---------- environment light for dynamic objects (CC0 HDRI from @pmndrs/assets) ----------
 const hdr = await new EXRLoader().loadAsync(warehouseHDR);
@@ -216,7 +214,7 @@ function tick(physics: boolean) {
 }
 syncCrates();
 if (HARNESS) {
-  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates });
+  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display });
 } else {
   renderer.setAnimationLoop(() => {
     tick(true);

@@ -6,10 +6,13 @@
 //             tour           every stop in tests/visual/tour.json, diffed against baselines
 //             scenarios      every page-side scenario (physics checks)
 //             bench          CPU frame time, draw calls, triangles (budgets come with M0.7 and §4.11)
+//             responsive     resizes the running game through laptop window sizes (D-008, M0.9): no stretching,
+//                            pixel budget kept, frames render; then checks the phone/tablet notice
 //             selftest       loads a page that throws; passes only if the error is caught
 //   options:  --backend webgpu|webgl|both (default both)   --size 960x540   --dpr 1
 //             --mode native|vulkan|swiftshader (default: native on macOS, vulkan on Linux)
-//             --update   write current tour frames as the new baselines
+//             --sizes 1280x720,1920x1080   window sizes for `responsive`
+//             --update   write current frames as the new baselines
 import { app, BrowserWindow, nativeImage } from 'electron';
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile, access } from 'node:fs/promises';
@@ -19,7 +22,7 @@ import pixelmatch from 'pixelmatch';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const argv = process.argv.slice(process.argv.findIndex((a) => a.endsWith('run.mjs')) + 1);
-const VALUED = new Set(['--backend', '--size', '--dpr', '--mode']);
+const VALUED = new Set(['--backend', '--size', '--dpr', '--mode', '--sizes']);
 const positionals = argv.filter((a, i) => !a.startsWith('--') && !VALUED.has(argv[i - 1]));
 const opt = (name, def) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : def; };
 const flag = (name) => argv.includes(`--${name}`);
@@ -33,6 +36,8 @@ const MAX_DIFF = 0.002; // fraction of pixels allowed to differ from a baseline
 const OUT = join(ROOT, 'tests/visual/out', command);
 const BASELINES = join(ROOT, 'tests/visual/baselines', PLATFORM);
 const TIMEOUT_MS = 10 * 60 * 1000;
+const SIZES = opt('sizes', '1280x720,1366x768,1440x900,1920x1080,3440x1440').split(',').map((s) => s.split('x').map(Number));
+const MAX_PIXELS = JSON.parse(await readFile(join(ROOT, 'content/display.json'), 'utf8'));
 
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
@@ -89,6 +94,7 @@ const png = (dataUrl) => Buffer.from(dataUrl.split(',')[1], 'base64');
 
 async function compare(name, backend, current) {
   const basePath = join(BASELINES, backend, `${name}.png`);
+  await mkdir(dirname(join(OUT, name)), { recursive: true });
   await mkdir(dirname(basePath), { recursive: true });
   if (flag('update') || !(await exists(basePath))) {
     await writeFile(basePath, current);
@@ -105,11 +111,19 @@ async function compare(name, backend, current) {
   const bad = pixelmatch(a.toBitmap(), b.toBitmap(), out, sa.width, sa.height, { threshold: 0.1 });
   const frac = bad / (sa.width * sa.height);
   if (frac > MAX_DIFF) {
-    await writeFile(join(OUT, `${backend}-${name}.diff.png`), nativeImage.createFromBitmap(out, sa).toPNG());
+    await writeFile(join(OUT, `${backend}-${name.replace(/\//g, '-')}.diff.png`), nativeImage.createFromBitmap(out, sa).toPNG());
     fail(`${backend}/${name}: ${(frac * 100).toFixed(2)}% of pixels differ from the baseline (limit ${MAX_DIFF * 100}%)`);
   }
   log(`${backend}/${name}: ${(frac * 100).toFixed(3)}% differ`);
   return { name, backend, diff: +frac.toFixed(5) };
+}
+
+// The command-line scale factor loses to a Retina screen on macOS; the DevTools override applies to the page
+// itself. width/height 0 keep the real window size, so resizing still works. Needs a loaded page.
+async function setPixelRatio(win) {
+  const dbg = win.webContents.debugger;
+  if (!dbg.isAttached()) dbg.attach('1.3');
+  await dbg.sendCommand('Emulation.setDeviceMetricsOverride', { width: 0, height: 0, deviceScaleFactor: DPR, mobile: false });
 }
 
 async function run() {
@@ -118,7 +132,7 @@ async function run() {
   if (!(await exists(join(dist, 'index.html')))) throw new Error('dist/ is missing: run `npm run build` first');
   const server = await serve(dist);
   const base = `http://127.0.0.1:${server.address().port}`;
-  const win = new BrowserWindow({ width: W, height: H, useContentSize: true, show: false,
+  const win = new BrowserWindow({ width: W, height: H, useContentSize: true, show: false, enableLargerThanScreen: true,
     webPreferences: { backgroundThrottling: false } });
   win.webContents.on('console-message', (e) => {
     const { level, message } = e;
@@ -127,7 +141,7 @@ async function run() {
   });
   win.webContents.on('render-process-gone', (_e, d) => fail(`renderer process gone: ${d.reason}`));
   win.webContents.on('did-fail-load', (_e, code, desc) => fail(`load failed: ${code} ${desc}`));
-  const probe = await (async () => { await win.loadURL(`${base}/`); return call(win, `(async()=>{ if(!navigator.gpu) return 'navigator.gpu missing'; const a = await navigator.gpu.requestAdapter(); if(!a) return 'no adapter'; const i = a.info || {}; return [i.vendor, i.architecture, i.description].filter(Boolean).join(' / ') || 'adapter'; })()`); })();
+  const probe = await (async () => { await win.loadURL(`${base}/`); await setPixelRatio(win); return call(win, `(async()=>{ if(!navigator.gpu) return 'navigator.gpu missing'; const a = await navigator.gpu.requestAdapter(); if(!a) return 'no adapter'; const i = a.info || {}; return [i.vendor, i.architecture, i.description].filter(Boolean).join(' / ') || 'adapter'; })()`); })();
   log(`platform ${PLATFORM}, window ${W}x${H} @${DPR}x, WebGPU adapter: ${probe}`);
   const report = { command, platform: PLATFORM, adapter: probe, size: `${W}x${H}`, dpr: DPR, results: [] };
 
@@ -164,6 +178,34 @@ async function run() {
           (r.pass ? log : fail)(`${backend}/${name}: ${r.pass ? 'PASS' : 'FAIL'} ${r.detail}`);
           report.results.push({ backend, ...r });
         }
+      } else if (command === 'responsive') {
+        const cfg = MAX_PIXELS;
+        const budget = cfg.tiers[cfg.defaultTier].maxPixels;
+        for (const [w, h] of SIZES) {
+          win.setContentSize(w, h);
+          const t0 = Date.now();
+          let d = await call(win, 'window.__harness.display()');
+          while ((d.cssW !== w || d.cssH !== h) && Date.now() - t0 < 5000) {
+            await new Promise((r) => setTimeout(r, 100));
+            d = await call(win, 'window.__harness.display()');
+          }
+          const label = `${w}x${h}-dpr${DPR}`; // no '@2x' in file names: nativeImage reads those as half-size Retina assets
+          const problems = [];
+          if (d.cssW !== w || d.cssH !== h) problems.push(`page is ${d.cssW}x${d.cssH}, window asked for ${w}x${h}`);
+          if (Math.abs(d.bufferW / d.bufferH - w / h) > 0.01) problems.push(`buffer ${d.bufferW}x${d.bufferH} is stretched against the ${w}x${h} window`);
+          if (Math.abs(d.aspect - w / h) > 1e-6) problems.push(`camera aspect ${d.aspect} != ${w / h}`);
+          if (d.bufferW * d.bufferH > budget * 1.02 && d.pixelRatio > cfg.minPixelRatio) problems.push(`buffer ${d.bufferW}x${d.bufferH} exceeds the ${cfg.defaultTier} budget`);
+          const stop = (await readFile(join(ROOT, 'tests/visual/tour.json'), 'utf8').then(JSON.parse)).stops[0];
+          const still = await call(win, `window.__harness.still(${JSON.stringify(stop)})`);
+          const after = await call(win, 'window.__harness.display()'); // a pixel-ratio change mid-capture shows up here
+          if (still.width !== d.bufferW || still.height !== d.bufferH || after.bufferW !== d.bufferW) problems.push(`still is ${still.width}x${still.height}, buffer was ${d.bufferW}x${d.bufferH} before and ${after.bufferW}x${after.bufferH} after`);
+          const buf = png(still.png);
+          await writeFile(join(OUT, `${backend}-${label}.png`), buf);
+          const cmp = await compare(`responsive/${label}`, backend, buf);
+          problems.forEach((m) => fail(`${backend}/${label}: ${m}`));
+          log(`${backend}/${label}: buffer ${d.bufferW}x${d.bufferH} (ratio ${d.pixelRatio.toFixed(2)}), fov ${d.fovV.toFixed(1)}° v / ${d.fovH.toFixed(1)}° h${problems.length ? '' : ' — ok'}`);
+          report.results.push({ backend, size: label, ...d, problems, diff: cmp.diff });
+        }
       } else if (command === 'bench') {
         const r = await call(win, 'window.__harness.bench()');
         log(`${backend}: ${JSON.stringify(r)}`);
@@ -173,6 +215,14 @@ async function run() {
       }
       if (errors.length) break;
     }
+    if (command === 'responsive' && !errors.length) {
+      await win.loadURL(`${base}/?device=touch`);
+      await new Promise((r) => setTimeout(r, 1000));
+      const notice = await call(win, `({ notice: !!document.getElementById('device-notice'), canvas: !!document.querySelector('canvas') })`);
+      if (!notice.notice || notice.canvas) fail(`touch-only device: notice ${notice.notice}, canvas ${notice.canvas} (want notice and no canvas)`);
+      else log('touch-only device: shows the laptop/desktop notice and does not start the renderer — ok');
+      report.results.push({ touchOnly: notice });
+    }
   }
   report.errors = errors;
   await writeFile(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
@@ -180,6 +230,8 @@ async function run() {
   return errors.length === 0;
 }
 
+// a stalled GPU or a page that never answers must fail the run, not hang the session
+setTimeout(() => { console.error(`[harness] FAIL: no result after ${TIMEOUT_MS / 60000} minutes`); app.exit(1); }, TIMEOUT_MS).unref();
 app.whenReady().then(() => run()).then(
   (ok) => { log(ok ? 'PASS' : `FAIL (${errors.length} error${errors.length === 1 ? '' : 's'})`); app.exit(ok ? 0 : 1); },
   (e) => { console.error('[harness] FAIL', e.message); app.exit(1); },

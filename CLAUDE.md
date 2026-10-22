@@ -30,8 +30,9 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | `npm run verify` | type check, unit tests, build, JS gzip budget, harness self-test, scenarios, screenshot tour (MASTER_PLAN §8.8) |
 | `npm run tour` / `npm run scenarios` / `npm run bench` | one harness command (needs `npm run build` first); options after `--`: `--backend webgpu\|webgl\|both`, `--size 1280x720`, `--dpr 2`, `--mode native\|vulkan\|swiftshader`, `--update`, `--verbose` |
 | `npm run harness -- shoot [stop]` | one still per backend into `tests/visual/out/shoot/` |
+| `npm run responsive` | resizes the running game through laptop window sizes at 1× and 2× (no stretching, pixel budget, phone notice) |
 | `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `bash tools/bootstrap.sh --blender`) |
 
-URL flags: `?webgl=1` force WebGL2 · `?harness=1` test clock + `window.__harness`, sets title `HARNESS_READY` · `?view=lightmap|uv` debug views · `?nopost=1`.
+URL flags: `?webgl=1` force WebGL2 · `?device=touch` pretend to be a phone (shows the notice) · `?harness=1` test clock + `window.__harness`, sets title `HARNESS_READY` · `?view=lightmap|uv` debug views · `?nopost=1`.
 
 Harness notes: `tools/harness/launch.mjs` wraps Electron in `xvfb-run` with `--no-sandbox` on Linux. Baselines live in `tests/visual/baselines/<platform>-<mode>/<backend>/` (`darwin-native` from the owner's Mac, `linux-vulkan` from cloud runs); a missing baseline is created and the run passes, so commit new ones. Add tour stops in `tests/visual/tour.json` and scenarios in `src/debug/harness.ts`.

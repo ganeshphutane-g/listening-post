@@ -64,3 +64,10 @@ Format: MASTER_PLAN §8.6. Newest at the bottom.
 - Alternatives: rAF-driven `?shot=1` (stalls in hidden windows and tabs); diffing with a loose threshold instead of a fixed clock (hides real regressions); one shared baseline set (fails on every platform but one).
 - Consequences: the Mac tour matches its baselines at 0.000%; a swapped baseline fails at 40% and writes a diff image. The first cloud run creates `linux-vulkan` baselines and must commit them. `bench` numbers from the hidden window are CPU encode time only; the real benchmark is M0.7.
 - Revisit when: temporal effects (TRAA, motion blur) need several warm-up frames, or baselines churn on driver updates.
+
+## 2026-10-22 D-010 Field of view is Hor+ between 4:3 and 21:9; render buffer capped per tier
+- Context: D-008's text said the camera keeps a horizontal field of view "so wider screens see more", which contradicts itself: a fixed horizontal view makes wide screens see less vertically. M0.9 also needed a rule for Retina and large windows, which can ask for far more pixels than the GPU should shade.
+- Decision: keep the vertical field of view fixed (72° by default, `content/display.json`), so a 16:10 Mac sees slightly less to the sides than 16:9 and a 21:9 monitor sees more. Below 4:3 the 4:3 horizontal view is held (no keyhole in tall windows); above 21:9 the 21:9 horizontal view is held (no fisheye on super-ultrawides). The render buffer uses min(device ratio, 2) × render scale, lowered until it fits the tier's pixel budget (Medium: 1920×1080 pixels), never below 0.5. Interface text scales with window height in CSS. Alt+Enter toggles fullscreen. Touch-only devices get a notice and the renderer never starts.
+- Alternatives: fixed horizontal view (Vert−, crops wide screens); unlimited pixel ratio (a 1440×900 Retina laptop would shade 5.2 MP per frame on an 8 GB M1).
+- Consequences: a 3440×1440 window on Medium renders 2225×931 and is upscaled; the M1 Air at 1440×900 Retina renders 1821×1138. Tier choice comes in M1.6, the field-of-view setting in M1.1/M1.6.
+- Revisit when: the owner's benchmark (M0.7) or playtests say the default field of view or budgets are wrong.

@@ -14,7 +14,8 @@
     "tour": "node tools/harness/launch.mjs tour",
     "scenarios": "node tools/harness/launch.mjs scenarios",
     "bench": "node tools/harness/launch.mjs bench",
-    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle && node tools/harness/launch.mjs selftest && npm run scenarios && npm run tour",
+    "responsive": "node tools/harness/launch.mjs responsive && node tools/harness/launch.mjs responsive --dpr 2 --sizes 1280x800,1440x900",
+    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle && node tools/harness/launch.mjs selftest && npm run scenarios && npm run tour && npm run responsive",
     "assets:crate": ".venv/bin/python tools/blender/make_crate.py public/assets/crate.glb",
     "assets:corridor": ".venv/bin/python tools/blender/bake_corridor.py public/assets 256 1024 assets_src"
   },

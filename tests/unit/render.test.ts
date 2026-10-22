@@ -26,8 +26,15 @@ describe('packReadback', () => {
     expect([...out]).toEqual([255, 0, 0, 255, 0, 0, 255, 255]);
   });
 
-  it('drops row padding (WebGPU 256-byte row alignment)', () => {
-    const pad = [9, 9, 9, 9];
+  it('drops WebGPU row padding when the last row is unpadded (three.js layout)', () => {
+    // 1 px wide: rows are padded from 4 to 256 bytes, except the last; a 2225 px wide read striped without this
+    const pad = new Array(252).fill(9);
+    const out = packReadback(new Uint8Array([...red, ...pad, ...blue]), 1, 2, false);
+    expect([...out]).toEqual([255, 0, 0, 255, 0, 0, 255, 255]);
+  });
+
+  it('drops WebGPU row padding when every row is padded', () => {
+    const pad = new Array(252).fill(9);
     const out = packReadback(new Uint8Array([...red, ...pad, ...blue, ...pad]), 1, 2, false);
     expect([...out]).toEqual([255, 0, 0, 255, 0, 0, 255, 255]);
   });

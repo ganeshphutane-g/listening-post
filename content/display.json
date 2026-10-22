@@ -1,0 +1,26 @@
+{
+  "note": "Display tuning (MASTER_PLAN \u00a74.10, D-008, D-010). maxPixels caps the render buffer per quality tier; tiers are chosen in M1.6 and tuned with benchmark files in M4.7.",
+  "defaultTier": "medium",
+  "maxDevicePixelRatio": 2,
+  "minPixelRatio": 0.5,
+  "renderScale": 1,
+  "fovVertical16x9": 72,
+  "tiers": {
+    "low": {
+      "maxPixels": 921600
+    },
+    "medium": {
+      "maxPixels": 2073600
+    },
+    "high": {
+      "maxPixels": 3686400
+    },
+    "ultra": {
+      "maxPixels": 8294400
+    }
+  },
+  "aspectClamp": {
+    "min": 1.333333333,
+    "max": 2.370370370
+  }
+}

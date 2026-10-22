@@ -45,7 +45,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: all present and linked from `CLAUDE.md`.
   - Needs: none
   - Est: 1 run
-- [ ] M0.9 Responsive display (D-008)
+- [x] M0.9 Responsive display (D-008)
   - Do: window resize, device pixel ratio, render scale capped per quality tier, horizontal-FOV camera for any aspect ratio, interface scaling, fullscreen toggle, phone and tablet notice (MASTER_PLAN §4.10)
   - Accept: the tour renders at 1280×720, 1366×768, 1440×900, 1920×1080, 2560×1600 at pixel ratio 2, and 3440×1440 through both backends with no page errors and no stretching; a resize mid-run keeps rendering; a touch-only device profile shows the notice
   - Needs: M0.3

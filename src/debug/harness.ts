@@ -6,6 +6,7 @@ import * as THREE from 'three/webgpu';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { advanceClock, realNow } from './clock';
 import { packReadback } from '../render/readback';
+import type { DisplayState } from '../render/display';
 
 export interface Stop { name: string; pos: [number, number, number]; target: [number, number, number] }
 export interface ScenarioResult { name: string; pass: boolean; detail: string }
@@ -21,6 +22,7 @@ export interface HarnessContext {
   world: RAPIER.World;
   rapier: typeof RAPIER;
   crates: { body: RAPIER.RigidBody; mesh: THREE.Object3D }[];
+  display: () => DisplayState;
 }
 
 const STEP_MS = 1000 / 60;
@@ -77,6 +79,7 @@ export function installHarness(ctx: HarnessContext): void {
 
   window.__harness = {
     backend: ctx.backend,
+    display: () => ctx.display(),
     scenarios: () => Object.keys(scenarios),
     scenario: (name: string) => {
       const run = scenarios[name];
@@ -122,6 +125,7 @@ declare global {
   interface Window {
     __harness?: {
       backend: string;
+      display(): DisplayState;
       scenarios(): string[];
       scenario(name: string): ScenarioResult;
       still(stop?: Stop, warmup?: number): Promise<{ png: string; width: number; height: number }>;

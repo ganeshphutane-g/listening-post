@@ -15,7 +15,7 @@ if (!existsSync(electron)) {
 }
 const args = [resolve(ROOT, 'tools/harness/run.mjs'), ...process.argv.slice(2)];
 const [cmd, cmdArgs] = process.platform === 'linux'
-  ? ['xvfb-run', ['-a', '-s', '-screen 0 1920x1080x24', electron, '--no-sandbox', ...args]]
+  ? ['xvfb-run', ['-a', '-s', '-screen 0 3840x2160x24', electron, '--no-sandbox', ...args]]
   : [electron, args];
 const r = spawnSync(cmd, cmdArgs, { stdio: 'inherit' });
 process.exit(r.status ?? 1);
