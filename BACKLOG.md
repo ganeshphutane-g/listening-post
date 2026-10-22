@@ -91,7 +91,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
 
 ## M2 Greybox level
 
-- [ ] M2.1 Layout data
+- [x] M2.1 Layout data
   - Do: `content/layout.json` and `content/rooms.json` for L1–L3 (rooms, openings, heights, acoustic tags).
   - Accept: validator checks connectivity and opening sizes.
   - Needs: all M1 items

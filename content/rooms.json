@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "note": "Per-room acoustics and surfaces (MASTER_PLAN \u00a74.7, M2.1). acoustic picks the generated impulse response (M5.3) and sound propagation losses (M3.1); noiseDb is the room's ambient level, which masks quieter sounds (machine rooms hide footsteps, \u00a73.1).",
+  "acousticTags": [
+    "small_hard",
+    "medium_hard",
+    "large_hard",
+    "soft",
+    "wet",
+    "machine",
+    "shaft"
+  ],
+  "rooms": {
+    "L1_entry_tunnel": {
+      "acoustic": "large_hard",
+      "surface": "concrete",
+      "noiseDb": 38
+    },
+    "L1_guard_post": {
+      "acoustic": "small_hard",
+      "surface": "linoleum",
+      "noiseDb": 30
+    },
+    "L1_corridor_a": {
+      "acoustic": "medium_hard",
+      "surface": "concrete",
+      "noiseDb": 32
+    },
+    "L1_mess_hall": {
+      "acoustic": "medium_hard",
+      "surface": "linoleum",
+      "noiseDb": 30
+    },
+    "L1_kitchen": {
+      "acoustic": "small_hard",
+      "surface": "tile",
+      "noiseDb": 36
+    },
+    "L1_dormitory": {
+      "acoustic": "soft",
+      "surface": "linoleum",
+      "noiseDb": 26
+    },
+    "L1_washroom": {
+      "acoustic": "small_hard",
+      "surface": "tile",
+      "noiseDb": 34
+    },
+    "L1_storage": {
+      "acoustic": "small_hard",
+      "surface": "concrete",
+      "noiseDb": 28
+    },
+    "L1_records_office": {
+      "acoustic": "soft",
+      "surface": "linoleum",
+      "noiseDb": 27
+    },
+    "L1_corridor_b": {
+      "acoustic": "medium_hard",
+      "surface": "concrete",
+      "noiseDb": 32
+    },
+    "L1_stairwell": {
+      "acoustic": "shaft",
+      "surface": "concrete",
+      "noiseDb": 30
+    },
+    "L2_stairwell": {
+      "acoustic": "shaft",
+      "surface": "concrete",
+      "noiseDb": 32
+    },
+    "L2_corridor": {
+      "acoustic": "medium_hard",
+      "surface": "concrete",
+      "noiseDb": 38
+    },
+    "L2_signals_hall": {
+      "acoustic": "large_hard",
+      "surface": "concrete",
+      "noiseDb": 44
+    },
+    "L2_listening_booths": {
+      "acoustic": "soft",
+      "surface": "linoleum",
+      "noiseDb": 30
+    },
+    "L2_teleprinter_room": {
+      "acoustic": "machine",
+      "surface": "linoleum",
+      "noiseDb": 58
+    },
+    "L2_archives": {
+      "acoustic": "soft",
+      "surface": "linoleum",
+      "noiseDb": 28
+    },
+    "L2_power_room": {
+      "acoustic": "machine",
+      "surface": "metal",
+      "noiseDb": 62
+    },
+    "L2_generator_gallery": {
+      "acoustic": "machine",
+      "surface": "metal",
+      "noiseDb": 74
+    },
+    "L2_lift_lobby": {
+      "acoustic": "medium_hard",
+      "surface": "concrete",
+      "noiseDb": 36
+    },
+    "L2_stairwell_b": {
+      "acoustic": "shaft",
+      "surface": "concrete",
+      "noiseDb": 34
+    },
+    "L3_stairwell": {
+      "acoustic": "shaft",
+      "surface": "concrete",
+      "noiseDb": 40
+    },
+    "L3_lift_lobby": {
+      "acoustic": "medium_hard",
+      "surface": "concrete_wet",
+      "noiseDb": 42
+    },
+    "L3_corridor": {
+      "acoustic": "wet",
+      "surface": "concrete_wet",
+      "noiseDb": 48
+    },
+    "L3_pump_room_a": {
+      "acoustic": "wet",
+      "surface": "water",
+      "noiseDb": 60
+    },
+    "L3_pump_room_b": {
+      "acoustic": "wet",
+      "surface": "water",
+      "noiseDb": 56
+    },
+    "L3_cable_vault": {
+      "acoustic": "small_hard",
+      "surface": "metal",
+      "noiseDb": 40
+    },
+    "L3_transmitter_room": {
+      "acoustic": "machine",
+      "surface": "linoleum",
+      "noiseDb": 50
+    },
+    "L3_antenna_shaft": {
+      "acoustic": "shaft",
+      "surface": "metal",
+      "noiseDb": 46
+    }
+  }
+}

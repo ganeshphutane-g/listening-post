@@ -1,0 +1,955 @@
+{
+  "version": 1,
+  "note": "Station K-7 layout (MASTER_PLAN \u00a73.3, M2.1). Metres; x east, z north (the entry tunnel opens north); each level is a floor at y = floorY. Rooms are axis-aligned boxes. Doors sit on the wall two rooms share (`at`); stairs and lifts join rooms on different levels; vents are creature-only ducts and may join rooms that do not touch. Checked by src/world/layout.ts (npm run test).",
+  "levels": [
+    {
+      "id": "L1",
+      "name": "Receiving",
+      "floorY": 0.0
+    },
+    {
+      "id": "L2",
+      "name": "Signals Hall",
+      "floorY": -12.0
+    },
+    {
+      "id": "L3",
+      "name": "Antenna Wells",
+      "floorY": -26.0
+    }
+  ],
+  "start": "L1_entry_tunnel",
+  "exit": {
+    "room": "L3_lift_lobby",
+    "via": "lift_to_surface",
+    "needs": "power_lift"
+  },
+  "rooms": [
+    {
+      "id": "L1_entry_tunnel",
+      "level": "L1",
+      "name": "Entry tunnel",
+      "x": [
+        -2.5,
+        2.5
+      ],
+      "z": [
+        20,
+        44
+      ],
+      "height": 5
+    },
+    {
+      "id": "L1_guard_post",
+      "level": "L1",
+      "name": "Guard post",
+      "x": [
+        2.5,
+        8
+      ],
+      "z": [
+        22,
+        28
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_corridor_a",
+      "level": "L1",
+      "name": "Receiving corridor",
+      "x": [
+        -2,
+        2
+      ],
+      "z": [
+        0,
+        20
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_mess_hall",
+      "level": "L1",
+      "name": "Mess hall",
+      "x": [
+        -14,
+        -2
+      ],
+      "z": [
+        8,
+        20
+      ],
+      "height": 3.5
+    },
+    {
+      "id": "L1_kitchen",
+      "level": "L1",
+      "name": "Kitchen",
+      "x": [
+        -14,
+        -6
+      ],
+      "z": [
+        2,
+        8
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_dormitory",
+      "level": "L1",
+      "name": "Dormitory",
+      "x": [
+        2,
+        14
+      ],
+      "z": [
+        8,
+        20
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_washroom",
+      "level": "L1",
+      "name": "Washroom",
+      "x": [
+        8,
+        14
+      ],
+      "z": [
+        2,
+        8
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_storage",
+      "level": "L1",
+      "name": "Storage",
+      "x": [
+        2,
+        8
+      ],
+      "z": [
+        -6,
+        2
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_records_office",
+      "level": "L1",
+      "name": "Records office",
+      "x": [
+        -10,
+        -2
+      ],
+      "z": [
+        -8,
+        0
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_corridor_b",
+      "level": "L1",
+      "name": "Inner corridor",
+      "x": [
+        -2,
+        2
+      ],
+      "z": [
+        -14,
+        0
+      ],
+      "height": 3
+    },
+    {
+      "id": "L1_stairwell",
+      "level": "L1",
+      "name": "Stairwell (upper)",
+      "x": [
+        2,
+        6
+      ],
+      "z": [
+        -14,
+        -6
+      ],
+      "height": 4
+    },
+    {
+      "id": "L2_stairwell",
+      "level": "L2",
+      "name": "Stairwell (middle)",
+      "x": [
+        2,
+        6
+      ],
+      "z": [
+        -14,
+        -6
+      ],
+      "height": 4
+    },
+    {
+      "id": "L2_corridor",
+      "level": "L2",
+      "name": "Signals corridor",
+      "x": [
+        -2,
+        2
+      ],
+      "z": [
+        -46,
+        -6
+      ],
+      "height": 3.2
+    },
+    {
+      "id": "L2_signals_hall",
+      "level": "L2",
+      "name": "Signals hall",
+      "x": [
+        -18,
+        -2
+      ],
+      "z": [
+        -26,
+        -10
+      ],
+      "height": 6
+    },
+    {
+      "id": "L2_listening_booths",
+      "level": "L2",
+      "name": "Listening booths",
+      "x": [
+        -18,
+        -2
+      ],
+      "z": [
+        -34,
+        -26
+      ],
+      "height": 3
+    },
+    {
+      "id": "L2_teleprinter_room",
+      "level": "L2",
+      "name": "Teleprinter room",
+      "x": [
+        2,
+        12
+      ],
+      "z": [
+        -22,
+        -14
+      ],
+      "height": 3.2
+    },
+    {
+      "id": "L2_archives",
+      "level": "L2",
+      "name": "Archives",
+      "x": [
+        2,
+        14
+      ],
+      "z": [
+        -34,
+        -22
+      ],
+      "height": 3.5
+    },
+    {
+      "id": "L2_power_room",
+      "level": "L2",
+      "name": "Power room",
+      "x": [
+        -10,
+        -2
+      ],
+      "z": [
+        -42,
+        -34
+      ],
+      "height": 4
+    },
+    {
+      "id": "L2_generator_gallery",
+      "level": "L2",
+      "name": "Generator gallery",
+      "x": [
+        -26,
+        -10
+      ],
+      "z": [
+        -46,
+        -34
+      ],
+      "height": 7
+    },
+    {
+      "id": "L2_lift_lobby",
+      "level": "L2",
+      "name": "Lift lobby (middle)",
+      "x": [
+        2,
+        8
+      ],
+      "z": [
+        -46,
+        -38
+      ],
+      "height": 3.5
+    },
+    {
+      "id": "L2_stairwell_b",
+      "level": "L2",
+      "name": "South stairwell (middle)",
+      "x": [
+        8,
+        12
+      ],
+      "z": [
+        -46,
+        -38
+      ],
+      "height": 4
+    },
+    {
+      "id": "L3_stairwell",
+      "level": "L3",
+      "name": "South stairwell (lower)",
+      "x": [
+        8,
+        12
+      ],
+      "z": [
+        -46,
+        -38
+      ],
+      "height": 4
+    },
+    {
+      "id": "L3_lift_lobby",
+      "level": "L3",
+      "name": "Lift lobby (lower)",
+      "x": [
+        2,
+        8
+      ],
+      "z": [
+        -46,
+        -38
+      ],
+      "height": 3.5
+    },
+    {
+      "id": "L3_corridor",
+      "level": "L3",
+      "name": "Wells corridor",
+      "x": [
+        -2,
+        2
+      ],
+      "z": [
+        -70,
+        -38
+      ],
+      "height": 3
+    },
+    {
+      "id": "L3_pump_room_a",
+      "level": "L3",
+      "name": "Pump room A",
+      "x": [
+        -14,
+        -2
+      ],
+      "z": [
+        -54,
+        -42
+      ],
+      "height": 5
+    },
+    {
+      "id": "L3_pump_room_b",
+      "level": "L3",
+      "name": "Pump room B (flooded)",
+      "x": [
+        -14,
+        -2
+      ],
+      "z": [
+        -66,
+        -54
+      ],
+      "height": 5
+    },
+    {
+      "id": "L3_cable_vault",
+      "level": "L3",
+      "name": "Cable vault",
+      "x": [
+        2,
+        12
+      ],
+      "z": [
+        -62,
+        -46
+      ],
+      "height": 3
+    },
+    {
+      "id": "L3_transmitter_room",
+      "level": "L3",
+      "name": "Transmitter room",
+      "x": [
+        2,
+        10
+      ],
+      "z": [
+        -70,
+        -62
+      ],
+      "height": 3
+    },
+    {
+      "id": "L3_antenna_shaft",
+      "level": "L3",
+      "name": "Antenna shaft",
+      "x": [
+        -8,
+        8
+      ],
+      "z": [
+        -90,
+        -70
+      ],
+      "height": 30
+    }
+  ],
+  "openings": [
+    {
+      "id": "d_tunnel_guard",
+      "type": "door",
+      "a": "L1_entry_tunnel",
+      "b": "L1_guard_post",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "open",
+      "at": {
+        "x": 2.5,
+        "z": 25.0
+      }
+    },
+    {
+      "id": "d_tunnel_corridor",
+      "type": "blast_door",
+      "a": "L1_entry_tunnel",
+      "b": "L1_corridor_a",
+      "width": 2.0,
+      "height": 2.4,
+      "state": "open",
+      "at": {
+        "x": 0.0,
+        "z": 20
+      }
+    },
+    {
+      "id": "d_corridor_mess",
+      "type": "door",
+      "a": "L1_corridor_a",
+      "b": "L1_mess_hall",
+      "width": 1.4,
+      "height": 2.1,
+      "state": "open",
+      "at": {
+        "x": -2,
+        "z": 14.0
+      }
+    },
+    {
+      "id": "d_mess_kitchen",
+      "type": "door",
+      "a": "L1_mess_hall",
+      "b": "L1_kitchen",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "open",
+      "at": {
+        "x": -10.0,
+        "z": 8
+      }
+    },
+    {
+      "id": "d_corridor_dorm",
+      "type": "door",
+      "a": "L1_corridor_a",
+      "b": "L1_dormitory",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": 14.0
+      }
+    },
+    {
+      "id": "d_dorm_wash",
+      "type": "door",
+      "a": "L1_dormitory",
+      "b": "L1_washroom",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 11.0,
+        "z": 8
+      }
+    },
+    {
+      "id": "d_corridor_ab",
+      "type": "archway",
+      "a": "L1_corridor_a",
+      "b": "L1_corridor_b",
+      "width": 2.0,
+      "height": 2.6,
+      "state": "open",
+      "at": {
+        "x": 0.0,
+        "z": 0
+      }
+    },
+    {
+      "id": "d_corridor_storage",
+      "type": "door",
+      "a": "L1_corridor_b",
+      "b": "L1_storage",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -3.0
+      }
+    },
+    {
+      "id": "d_corridor_records",
+      "type": "door",
+      "a": "L1_corridor_b",
+      "b": "L1_records_office",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "locked",
+      "at": {
+        "x": -2,
+        "z": -4.0
+      },
+      "lockedBy": "key_records"
+    },
+    {
+      "id": "d_corridor_stair1",
+      "type": "door",
+      "a": "L1_corridor_b",
+      "b": "L1_stairwell",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -10.0
+      }
+    },
+    {
+      "id": "s_l1_l2",
+      "type": "stairs",
+      "a": "L1_stairwell",
+      "b": "L2_stairwell",
+      "width": 1.2,
+      "height": 2.4,
+      "state": "open",
+      "at": {
+        "x": 4.0,
+        "z": -10.0
+      }
+    },
+    {
+      "id": "d_stair2_corridor",
+      "type": "door",
+      "a": "L2_stairwell",
+      "b": "L2_corridor",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -10.0
+      }
+    },
+    {
+      "id": "d_corridor_hall",
+      "type": "blast_door",
+      "a": "L2_corridor",
+      "b": "L2_signals_hall",
+      "width": 1.8,
+      "height": 2.6,
+      "state": "open",
+      "at": {
+        "x": -2,
+        "z": -18.0
+      }
+    },
+    {
+      "id": "d_corridor_booths",
+      "type": "door",
+      "a": "L2_corridor",
+      "b": "L2_listening_booths",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": -2,
+        "z": -30.0
+      }
+    },
+    {
+      "id": "d_hall_booths",
+      "type": "door",
+      "a": "L2_signals_hall",
+      "b": "L2_listening_booths",
+      "width": 1.4,
+      "height": 2.1,
+      "state": "open",
+      "at": {
+        "x": -10.0,
+        "z": -26
+      }
+    },
+    {
+      "id": "d_corridor_teleprinter",
+      "type": "door",
+      "a": "L2_corridor",
+      "b": "L2_teleprinter_room",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -18.0
+      }
+    },
+    {
+      "id": "d_corridor_archives",
+      "type": "door",
+      "a": "L2_corridor",
+      "b": "L2_archives",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "locked",
+      "at": {
+        "x": 2,
+        "z": -28.0
+      },
+      "lockedBy": "code_archives"
+    },
+    {
+      "id": "d_corridor_power",
+      "type": "door",
+      "a": "L2_corridor",
+      "b": "L2_power_room",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": -2,
+        "z": -38.0
+      }
+    },
+    {
+      "id": "d_power_generators",
+      "type": "blast_door",
+      "a": "L2_power_room",
+      "b": "L2_generator_gallery",
+      "width": 1.6,
+      "height": 2.4,
+      "state": "closed",
+      "at": {
+        "x": -10,
+        "z": -38.0
+      }
+    },
+    {
+      "id": "d_corridor_liftlobby2",
+      "type": "door",
+      "a": "L2_corridor",
+      "b": "L2_lift_lobby",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -42.0
+      }
+    },
+    {
+      "id": "d_liftlobby2_stairb",
+      "type": "door",
+      "a": "L2_lift_lobby",
+      "b": "L2_stairwell_b",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 8,
+        "z": -42.0
+      }
+    },
+    {
+      "id": "s_l2_l3",
+      "type": "stairs",
+      "a": "L2_stairwell_b",
+      "b": "L3_stairwell",
+      "width": 1.2,
+      "height": 2.4,
+      "state": "open",
+      "at": {
+        "x": 10.0,
+        "z": -42.0
+      }
+    },
+    {
+      "id": "lift_l2_l3",
+      "type": "lift",
+      "a": "L2_lift_lobby",
+      "b": "L3_lift_lobby",
+      "width": 1.6,
+      "height": 2.3,
+      "state": "closed",
+      "at": {
+        "x": 5.0,
+        "z": -42.0
+      },
+      "powered": "power_lift"
+    },
+    {
+      "id": "d_stair3_liftlobby3",
+      "type": "door",
+      "a": "L3_stairwell",
+      "b": "L3_lift_lobby",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 8,
+        "z": -42.0
+      }
+    },
+    {
+      "id": "d_liftlobby3_corridor",
+      "type": "door",
+      "a": "L3_lift_lobby",
+      "b": "L3_corridor",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -42.0
+      }
+    },
+    {
+      "id": "d_corridor_pumpa",
+      "type": "door",
+      "a": "L3_corridor",
+      "b": "L3_pump_room_a",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": -2,
+        "z": -48.0
+      }
+    },
+    {
+      "id": "d_pumpa_pumpb",
+      "type": "door",
+      "a": "L3_pump_room_a",
+      "b": "L3_pump_room_b",
+      "width": 1.2,
+      "height": 2.1,
+      "state": "open",
+      "at": {
+        "x": -8.0,
+        "z": -54
+      }
+    },
+    {
+      "id": "d_corridor_pumpb",
+      "type": "door",
+      "a": "L3_corridor",
+      "b": "L3_pump_room_b",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": -2,
+        "z": -60.0
+      }
+    },
+    {
+      "id": "d_corridor_vault",
+      "type": "door",
+      "a": "L3_corridor",
+      "b": "L3_cable_vault",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 2,
+        "z": -54.0
+      }
+    },
+    {
+      "id": "d_corridor_transmitter",
+      "type": "door",
+      "a": "L3_corridor",
+      "b": "L3_transmitter_room",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "locked",
+      "at": {
+        "x": 2,
+        "z": -66.0
+      },
+      "lockedBy": "key_transmitter"
+    },
+    {
+      "id": "d_vault_transmitter",
+      "type": "door",
+      "a": "L3_cable_vault",
+      "b": "L3_transmitter_room",
+      "width": 0.95,
+      "height": 2.1,
+      "state": "closed",
+      "at": {
+        "x": 6.0,
+        "z": -62
+      }
+    },
+    {
+      "id": "d_corridor_shaft",
+      "type": "blast_door",
+      "a": "L3_corridor",
+      "b": "L3_antenna_shaft",
+      "width": 2.2,
+      "height": 2.6,
+      "state": "closed",
+      "at": {
+        "x": 0.0,
+        "z": -70
+      }
+    },
+    {
+      "id": "v_dorm_mess",
+      "type": "vent",
+      "a": "L1_dormitory",
+      "b": "L1_mess_hall",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": 8.0,
+        "z": 14.0
+      }
+    },
+    {
+      "id": "v_wash_storage",
+      "type": "vent",
+      "a": "L1_washroom",
+      "b": "L1_storage",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": 11.0,
+        "z": 5.0
+      }
+    },
+    {
+      "id": "v_records_kitchen",
+      "type": "vent",
+      "a": "L1_records_office",
+      "b": "L1_kitchen",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": -6.0,
+        "z": -4.0
+      }
+    },
+    {
+      "id": "v_hall_power",
+      "type": "vent",
+      "a": "L2_signals_hall",
+      "b": "L2_power_room",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": -10.0,
+        "z": -18.0
+      }
+    },
+    {
+      "id": "v_archives_teleprinter",
+      "type": "vent",
+      "a": "L2_archives",
+      "b": "L2_teleprinter_room",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": 8.0,
+        "z": -28.0
+      }
+    },
+    {
+      "id": "v_l2_l3_shaft",
+      "type": "vent",
+      "a": "L2_generator_gallery",
+      "b": "L3_pump_room_a",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": -18.0,
+        "z": -40.0
+      }
+    },
+    {
+      "id": "v_vault_shaft",
+      "type": "vent",
+      "a": "L3_cable_vault",
+      "b": "L3_antenna_shaft",
+      "width": 0.5,
+      "height": 0.5,
+      "state": "open",
+      "creatureOnly": true,
+      "at": {
+        "x": 7.0,
+        "z": -54.0
+      }
+    }
+  ]
+}
