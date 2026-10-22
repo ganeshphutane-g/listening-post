@@ -51,6 +51,9 @@ export class CharacterController {
 
   private capsuleHalf(height: number) { return Math.max(0.01, height / 2 - this.t.radius); }
 
+  /** The horizontal velocity the player is asking for (before collisions), m/s. */
+  get wantedVelocity(): { x: number; y: number; z: number } { return { x: this.vel.x, y: 0, z: this.vel.z }; }
+
   get feet() { const p = this.collider.translation(); return { x: p.x, y: p.y - this.height / 2, z: p.z }; }
 
   /** Eye position plus camera roll for lean and offsets for head-bob, for the camera to follow. */

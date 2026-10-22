@@ -36,9 +36,17 @@ export function interactionScenarios(R: typeof RAPIER, world: RAPIER.World): Rec
       for (let i = 0; i < 30; i++) { ia.hold(eyeAt(-1.75), dir, DT); world.step(); }
       const closed = doorYaw(door.body);
       ia.end();
-      removeBodies([door.body]); world.removeCollider(f, false);
-      const pass = grabbed && opened > 45 && pushed <= tuning.door.maxOpenDeg + 3 && pushed > opened && closed < 10;
-      return { name: 'interaction-door-drag', pass, detail: `grabbed=${grabbed}; a 0.35 m step opened it to ${opened.toFixed(1)}°; walking on: ${pushed.toFixed(1)}° (limit ${tuning.door.maxOpenDeg}°); backing away closed it to ${closed.toFixed(1)}°` };
+      removeBodies([door.body]);
+      // pressed against the closed door, the body cannot move, but pressing forward still pushes it open
+      const door2 = ia.addDoor({ x: x0 + 4, y: 0, z: -3 }, 0.9, 2.0, 0); world.step();
+      const eye2 = { x: x0 + 4.55, y: 1.6, z: -2.7 };
+      const dir2 = norm({ x: 0.1, y: -0.55, z: -0.3 });
+      const grabbed2 = ia.begin(eye2, dir2);
+      for (let i = 0; i < 60; i++) { ia.hold(eye2, dir2, DT, { x: 0, y: 0, z: -1.6 }); world.step(); }
+      const pressed = doorYaw(door2.body);
+      ia.end(); removeBodies([door2.body]); world.removeCollider(f, false);
+      const pass = grabbed && opened > 45 && pushed <= tuning.door.maxOpenDeg + 3 && pushed > opened && closed < 10 && grabbed2 && pressed > 45;
+      return { name: 'interaction-door-drag', pass, detail: `grabbed=${grabbed}; a 0.35 m step opened it to ${opened.toFixed(1)}°; walking on: ${pushed.toFixed(1)}° (limit ${tuning.door.maxOpenDeg}°); backing away closed it to ${closed.toFixed(1)}°; pressing forward while touching it: ${pressed.toFixed(1)}°` };
     },
     'interaction-throw-distance': () => {
       const x0 = 360, f = floor(x0), ia = new Interaction(R, world);

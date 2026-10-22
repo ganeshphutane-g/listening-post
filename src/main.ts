@@ -275,7 +275,8 @@ function simulate(dt: number) {
   acc = Math.min(acc + dt, STEP * 5); // after a long stall, catch up at most 5 steps instead of spiralling
   while (acc >= STEP) {
     player.step(intent, look.y, STEP);
-    interaction.hold(camera.position, viewDir(), STEP);
+    const eyeNow = player.eye(look.y); // the camera is placed after the loop; sub-steps need the body's own position
+    interaction.hold(eyeNow, viewDir(), STEP, player.wantedVelocity);
     tick(true);
     acc -= STEP;
   }

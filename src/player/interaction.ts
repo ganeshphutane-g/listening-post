@@ -29,7 +29,7 @@ export function throwSpeed(charge: number, mass: number, t = tuning.throw): numb
 
 export class Interaction {
   private items = new Map<number, Interactable>();
-  held: { item: Interactable; grabDistance: number; grabLocal: V3; hand0: V3; angle0: number } | null = null;
+  held: { item: Interactable; grabDistance: number; grabLocal: V3; hand0: V3; angle0: number; prevOrigin: V3 | null; blocked: V3 } | null = null;
   charge = 0;
   private charging = false;
 
@@ -88,16 +88,26 @@ export class Interaction {
     const rel = sub(f.point, p);
     const inv = { x: -q.x, y: -q.y, z: -q.z, w: q.w };
     const angle0 = f.item.kind === 'door' ? doorAngle(f.item) : 0;
-    this.held = { item: f.item, grabDistance: f.item.kind === 'prop' ? this.t.holdDistance : f.distance, grabLocal: rotate(inv, rel), hand0: f.point, angle0 };
+    this.held = { item: f.item, grabDistance: f.item.kind === 'prop' ? this.t.holdDistance : f.distance, grabLocal: rotate(inv, rel), hand0: f.point, angle0, prevOrigin: null, blocked: { x: 0, y: 0, z: 0 } };
     f.item.body.wakeUp();
     return true;
   }
 
-  /** While held, each fixed step: move the hand point along the view ray and let the item follow. */
-  hold(origin: V3, dir: V3, dt: number): void {
+  /**
+   * While held, each fixed step: move the hand point along the view ray and let the item follow. `wanted` is
+   * the player's requested velocity: the part a door stops the body from making still pushes the door
+   * (playtest 1: walking into a held door from right next to it did nothing).
+   */
+  hold(origin: V3, dir: V3, dt: number, wanted?: V3): void {
     const h = this.held;
     if (!h) return;
-    const hand = add(origin, dir, h.grabDistance);
+    if (h.item.kind === 'door' && wanted && h.prevOrigin) {
+      const clampAxis = (v: number) => Math.max(-1.5, Math.min(1.5, v));
+      h.blocked.x = clampAxis(h.blocked.x + wanted.x * dt - (origin.x - h.prevOrigin.x));
+      h.blocked.z = clampAxis(h.blocked.z + wanted.z * dt - (origin.z - h.prevOrigin.z));
+    }
+    h.prevOrigin = { ...origin };
+    const hand = add(add(origin, dir, h.grabDistance), h.blocked);
     const it = h.item;
     if (it.kind === 'door') {
       // the door turns by how far the hand has pushed along its swing (walking into it, or turning the view),
