@@ -29,7 +29,7 @@ export function throwSpeed(charge: number, mass: number, t = tuning.throw): numb
 
 export class Interaction {
   private items = new Map<number, Interactable>();
-  held: { item: Interactable; grabDistance: number; grabLocal: V3 } | null = null;
+  held: { item: Interactable; grabDistance: number; grabLocal: V3; hand0: V3; angle0: number } | null = null;
   charge = 0;
   private charging = false;
 
@@ -87,7 +87,8 @@ export class Interaction {
     // grab point in the body's frame, so a door is held where it was touched
     const rel = sub(f.point, p);
     const inv = { x: -q.x, y: -q.y, z: -q.z, w: q.w };
-    this.held = { item: f.item, grabDistance: f.item.kind === 'prop' ? this.t.holdDistance : f.distance, grabLocal: rotate(inv, rel) };
+    const angle0 = f.item.kind === 'door' ? doorAngle(f.item) : 0;
+    this.held = { item: f.item, grabDistance: f.item.kind === 'prop' ? this.t.holdDistance : f.distance, grabLocal: rotate(inv, rel), hand0: f.point, angle0 };
     f.item.body.wakeUp();
     return true;
   }
@@ -99,8 +100,14 @@ export class Interaction {
     const hand = add(origin, dir, h.grabDistance);
     const it = h.item;
     if (it.kind === 'door') {
-      const restDir = { x: Math.cos(it.restYaw), y: 0, z: -Math.sin(it.restYaw) };
-      const target = Math.min(it.maxRad, Math.max(0, angleAboutY(restDir, sub(hand, it.hinge))));
+      // the door turns by how far the hand has pushed along its swing (walking into it, or turning the view),
+      // divided by the lever arm from the hinge; following the hand's position instead failed in playtest 1,
+      // because a body walking into a door stops at it and the hand point hardly moves
+      const a = it.restYaw + h.angle0;
+      const swing = { x: -Math.sin(a), y: 0, z: -Math.cos(a) }; // where the grabbed point moves as the angle grows
+      const g = h.hand0, lever = Math.max(0.2, Math.hypot(g.x - it.hinge.x, g.z - it.hinge.z));
+      const push = dot(sub(hand, g), swing);
+      const target = Math.min(it.maxRad, Math.max(0, h.angle0 + (push / lever) * this.t.door.pushGain));
       it.joint.configureMotorPosition(target, this.t.door.motorStiffness, this.t.door.motorDamping);
     } else if (it.kind === 'drawer') {
       const grabRest = add(it.rest, h.grabLocal);
@@ -145,6 +152,12 @@ export class Interaction {
     this.charge = 0;
     return speed;
   }
+}
+
+/** Current opening angle of a door, from its body's yaw relative to the closed position. */
+function doorAngle(d: Door): number {
+  const q = d.body.rotation();
+  return 2 * Math.atan2(q.y, q.w) - d.restYaw;
 }
 
 function rotate(q: { x: number; y: number; z: number; w: number }, v: V3): V3 {

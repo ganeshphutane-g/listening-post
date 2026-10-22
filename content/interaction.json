@@ -1,10 +1,33 @@
 {
-  "note": "Interaction tuning (MASTER_PLAN §4.6, M1.4). Metres, seconds, kilograms.",
+  "note": "Interaction tuning (MASTER_PLAN \u00a74.6, M1.4). Metres, seconds, kilograms.",
   "reach": 2.2,
   "holdDistance": 1.1,
   "maxCarryMass": 20,
-  "carry": { "stiffness": 14, "maxSpeed": 6, "angularDamping": 0.85 },
-  "throw": { "minSpeed": 2.5, "maxSpeed": 9, "chargeSeconds": 0.8, "referenceMass": 1, "expectedRange1kg": [3.5, 7.5] },
-  "door": { "motorStiffness": 900, "motorDamping": 120, "friction": 4, "maxOpenDeg": 110 },
-  "drawer": { "motorStiffness": 600, "motorDamping": 60, "friction": 3 }
+  "carry": {
+    "stiffness": 14,
+    "maxSpeed": 6,
+    "angularDamping": 0.85
+  },
+  "throw": {
+    "minSpeed": 2.5,
+    "maxSpeed": 9,
+    "chargeSeconds": 0.8,
+    "referenceMass": 1,
+    "expectedRange1kg": [
+      3.5,
+      7.5
+    ]
+  },
+  "door": {
+    "motorStiffness": 900,
+    "motorDamping": 120,
+    "friction": 4,
+    "maxOpenDeg": 110,
+    "pushGain": 1.6
+  },
+  "drawer": {
+    "motorStiffness": 600,
+    "motorDamping": 60,
+    "friction": 3
+  }
 }

@@ -17,30 +17,28 @@ export function interactionScenarios(R: typeof RAPIER, world: RAPIER.World): Rec
 
   return {
     'interaction-door-drag': () => {
+      // playtest 1: grab the door and walk at it; it swings away and stops at its limit; back off and it follows
       const x0 = 340, f = floor(x0), ia = new Interaction(R, world);
       const hinge = { x: x0, y: 0, z: -3 };
       const door = ia.addDoor(hinge, 0.9, 2.0, 0);
       world.step();
-      const eye = { x: x0 + 0.6, y: 1.6, z: -1.6 };
-      const aim = (deg: number) => {
-        const a = (deg * Math.PI) / 180;
-        return norm({ x: hinge.x + Math.cos(a) * 0.75 - eye.x, y: 1.05 - eye.y, z: hinge.z - Math.sin(a) * 0.75 - eye.z });
-      };
-      const dir0 = aim(0);
-      const grabbed = ia.begin(eye, dir0);
-      // the player walks the door open: the hand (a fixed distance along the view) follows the door's arc
-      const g = ia.held?.grabDistance ?? 1;
-      const handAt = (deg: number) => { const a = (deg * Math.PI) / 180; return { x: hinge.x + Math.cos(a) * 0.75, y: 1.05, z: hinge.z - Math.sin(a) * 0.75 }; };
-      const eyeFor = (deg: number) => { const h = handAt(deg); return { x: h.x - dir0.x * g, y: h.y - dir0.y * g, z: h.z - dir0.z * g }; };
-      for (let i = 0; i <= 90; i++) { ia.hold(eyeFor(Math.min(80, i)), dir0, DT); world.step(); }
-      for (let i = 0; i < 30; i++) { ia.hold(eyeFor(80), dir0, DT); world.step(); }
+      const grabAt = { x: x0 + 0.65, y: 1.05, z: -3 };
+      const eyeAt = (z: number) => ({ x: x0 + 0.55, y: 1.6, z });
+      const dir = norm({ x: grabAt.x - eyeAt(-1.9).x, y: grabAt.y - 1.6, z: grabAt.z + 1.9 });
+      const grabbed = ia.begin(eyeAt(-1.9), dir);
+      for (let i = 0; i <= 60; i++) { ia.hold(eyeAt(-1.9 - 0.35 * (i / 60)), dir, DT); world.step(); } // a short step forward
+      for (let i = 0; i < 30; i++) { ia.hold(eyeAt(-2.25), dir, DT); world.step(); }
       const opened = doorYaw(door.body);
-      for (let i = 0; i < 90; i++) { ia.hold(eyeFor(80 + i), dir0, DT); world.step(); } // keep pushing past the stop
+      for (let i = 0; i <= 60; i++) { ia.hold(eyeAt(-2.25 - 0.8 * (i / 60)), dir, DT); world.step(); } // keep walking: the stop holds
+      for (let i = 0; i < 30; i++) { ia.hold(eyeAt(-3.05), dir, DT); world.step(); }
       const pushed = doorYaw(door.body);
+      for (let i = 0; i <= 90; i++) { ia.hold(eyeAt(-3.05 + 1.3 * (i / 90)), dir, DT); world.step(); } // back away past the start
+      for (let i = 0; i < 30; i++) { ia.hold(eyeAt(-1.75), dir, DT); world.step(); }
+      const closed = doorYaw(door.body);
       ia.end();
       removeBodies([door.body]); world.removeCollider(f, false);
-      const pass = grabbed && opened > 45 && pushed <= tuning.door.maxOpenDeg + 3;
-      return { name: 'interaction-door-drag', pass, detail: `grabbed=${grabbed}; dragged to ${opened.toFixed(1)}°; pushed past the stop: ${pushed.toFixed(1)}° (limit ${tuning.door.maxOpenDeg}°)` };
+      const pass = grabbed && opened > 45 && pushed <= tuning.door.maxOpenDeg + 3 && pushed > opened && closed < 10;
+      return { name: 'interaction-door-drag', pass, detail: `grabbed=${grabbed}; a 0.35 m step opened it to ${opened.toFixed(1)}°; walking on: ${pushed.toFixed(1)}° (limit ${tuning.door.maxOpenDeg}°); backing away closed it to ${closed.toFixed(1)}°` };
     },
     'interaction-throw-distance': () => {
       const x0 = 360, f = floor(x0), ia = new Interaction(R, world);
