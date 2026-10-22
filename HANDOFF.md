@@ -1,4 +1,4 @@
-# HANDOFF — 2026-10-22 14:15 IST — run 3 (interactive, owner's Mac, 2-hour build session)
+# HANDOFF — 2026-10-22 15:10 IST — run 3 (interactive, owner's Mac, 2-hour build session)
 
 > **PAUSED for scheduled runs (owner, 2026-10-21).** The routine "Listening Post daily build" stays disabled. On 2026-10-22 the owner asked for a 2-hour interactive build session; scheduled runs resume only when the owner says so (then re-enable it at https://claude.ai/code/routines/trig_01GDfwsaPBiuagjXtDGfS8EA and delete this line). If a scheduled run starts anyway, change nothing and stop.
 
@@ -35,6 +35,8 @@
 - Then M2.2 Greybox generator (Blender script builds zone meshes and colliders from `content/layout.json`; needs M2.1).
 
 ## Known issues
+- Feel Lab props are spawned slightly above the floor, so they emit impact events while settling in the first second after load; spawn them at rest (or ignore impacts before the first second) before the creature listens (M3).
+- M2.2 (greybox generator) is next in order; M2.5 was built ahead of it. M2.3, M2.4 and M2.6 remain.
 - Pointer lock could not be checked in the automated browser (it needs a real user click); the logic is covered by the scenario, the owner checks the real lock.
 - No `linux-vulkan` baselines yet: the first cloud run creates them (the run passes) and must commit them. Cloud WebGPU runs on SwiftShader and is slow (about 66 s per still in M0.2); `npm run verify` there may take several minutes.
 - The harness `bench` command reports CPU encode time only; draw calls and triangles come from `benchpage`, because three.js resets `renderer.info` inside its own animation loop.
