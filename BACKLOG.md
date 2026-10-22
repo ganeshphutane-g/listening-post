@@ -63,7 +63,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: scenarios for step height, slope limit, crouch under a 1.2 m beam.
   - Needs: M1.1
   - Est: 1 run
-- [ ] M1.3 Flashlight
+- [x] M1.3 Flashlight
   - Do: spot light on the camera with lag, cookie texture, battery drain, low-battery flicker, toggle
   - Accept: tour frame shows the cookie pattern; unit test drains a full battery in 900 s of on-time (tunable)
   - Needs: M1.2

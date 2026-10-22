@@ -27,6 +27,7 @@ import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device'
 import { loadSettings } from './core/settings';
 import { Input } from './player/input';
 import { CharacterController } from './player/controller';
+import { Flashlight } from './player/flashlight';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -123,15 +124,7 @@ if (VIEW) { // debug views: lightmap through UVs, raw UVs
 }
 
 // ---------- real-time lights: flashlight (shadows) + lamps that only feed the fog ----------
-const torch = new THREE.SpotLight(0xfff2e0, 14, 26, THREE.MathUtils.degToRad(20), 0.6, 2);
-torch.position.set(0.25, -0.2, 0);
-torch.castShadow = true;
-torch.shadow.mapSize.set(1024, 1024);
-torch.shadow.bias = -0.0004;
-torch.layers.enable(VOL);
-camera.add(torch);
-torch.target.position.set(0.02, -0.04, -1);
-camera.add(torch.target);
+const flashlight = new Flashlight(scene, camera, VOL); // cookie, lag, battery (M1.3)
 const fogLamp = new THREE.PointLight(0xffb873, 6, 9, 2);
 fogLamp.position.set(0, 2.75, -7);
 fogLamp.layers.set(VOL); // lights the fog only; its effect on walls is already baked
@@ -231,7 +224,7 @@ function simulate(dt: number) {
   const { yaw, pitch } = input.look(dt, pad);
   look.y += yaw;
   look.x = THREE.MathUtils.clamp(look.x + pitch, -MAX_PITCH, MAX_PITCH);
-  if (input.wasPressed('flashlight')) torch.visible = !torch.visible; // battery and flicker come in M1.3
+  if (input.wasPressed('flashlight')) flashlight.toggle();
   if (settings.crouchToggle) { if (input.wasPressed('crouch')) crouchLatched = !crouchLatched; } else crouchLatched = input.isDown('crouch');
   const move = input.move(pad);
   const intent = { x: move.x, y: move.y, sprint: input.isDown('sprint'), crouch: crouchLatched,
@@ -257,10 +250,11 @@ function tick(physics: boolean) {
   const n = flicker.noise(t * 8, 0.5, 0);
   fogLamp.intensity = n < -0.35 ? 0.6 : 6 + n * 3;
   if (physics) { world.step(); syncCrates(); }
+  flashlight.update(1 / 60);
 }
 syncCrates();
 if (HARNESS) {
-  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input });
+  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input, onCameraCut: () => flashlight.snap() });
 } else if (params.has('bench')) {
   runBench({ renderer, pipeline, camera, backend, isWebGPU, tick, display });
 } else {

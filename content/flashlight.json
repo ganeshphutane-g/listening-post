@@ -1,0 +1,12 @@
+{
+  "note": "Flashlight tuning (MASTER_PLAN §3.5 item 9, M1.3). Seconds, metres, degrees, candela-like three.js intensity.",
+  "intensity": 18,
+  "distance": 26,
+  "angleDeg": 22,
+  "color": "#fff2e0",
+  "shadowMapSize": 1024,
+  "offset": [0.22, -0.2, 0.05],
+  "lagPerSecond": 16,
+  "battery": { "drainSeconds": 900, "low": 0.15, "lowestIntensity": 0.3 },
+  "flicker": { "rate": 7, "dipThreshold": 0.25, "dipDepth": 0.85 }
+}

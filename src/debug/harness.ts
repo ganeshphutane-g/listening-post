@@ -26,6 +26,8 @@ export interface HarnessContext {
   crates: { body: RAPIER.RigidBody; mesh: THREE.Object3D }[];
   display: () => DisplayState;
   input: Input;
+  /** the camera jumped (tour stop): anything that trails it must catch up at once */
+  onCameraCut: () => void;
 }
 
 const STEP_MS = 1000 / 60;
@@ -105,6 +107,7 @@ export function installHarness(ctx: HarnessContext): void {
       if (stop) {
         camera.position.set(...stop.pos);
         camera.lookAt(...stop.target);
+        ctx.onCameraCut();
       }
       for (let i = 0; i < warmup; i++) frame(false);
       return readPixels();
