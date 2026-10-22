@@ -50,7 +50,7 @@
 - Target devices (owner, 2026-10-21): laptops and desktops only, Mac and Windows, every major browser; responsive to any window. Built in M0.9 (D-008).
 
 ## Questions for you
-- Layout review (M2 gate, no rush): the room list and sizes for L1–L3 are in `content/layout.json` (decision D-020). Anything to add, cut or move?
+- Layout review (M2 gate, no rush): floor plans of L1–L3 are in `docs/layout.svg` (open it in a browser; data in `content/layout.json`, decision D-020). Anything to add, cut or move?
 - Playtest 1: follow `docs/PLAYTESTS.md` (Feel Lab at https://ganeshphutane-g.github.io/listening-post/?lab=1) and send the filled template.
 - Please open https://ganeshphutane-g.github.io/listening-post/ in Chrome and in Safari: does it show the corridor? Press Play: does the mouse look around, do WASD/Shift/C/Q/E move you, can you drag a crate with the left mouse, does Esc show the pause screen, does F switch the torch? Then add `?bench=1` to the address, wait 62 s, press Download file; repeat with `?bench=1&webgl=1`. Send the four files.
 - Shall I run `python3 tools/fetch_assets.py` on this Mac (downloads 595 MB of CC0 Poly Haven textures into `assets_src/`, not into git)? It is needed before the art pass (M4.3), not before.

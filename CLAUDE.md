@@ -34,6 +34,7 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | `npm run harness -- shoot [stop]` | one still per backend into `tests/visual/out/shoot/` |
 | `npm run tour -- --view lightmap` | tours the lightmap debug view against its own baselines (part of verify) |
 | `npm run menus` | walks every menu, reloads, checks settings persisted |
+| `node tools/pipeline/plan_svg.mjs` | redraws `docs/layout.svg` (floor plans) after editing `content/layout.json` |
 | `npm run lab` | loads the Feel Lab (`?lab=1`) on both backends and saves a still; part of verify |
 | `npm run benchpage` | runs the real `?bench=5` page on both backends and checks its results and buttons |
 | `npm run responsive` | resizes the running game through laptop window sizes at 1× and 2× (no stretching, pixel budget, phone notice) |
