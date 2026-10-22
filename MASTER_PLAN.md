@@ -465,9 +465,9 @@ The credits screen is generated from the ledger. A pipeline test fails on any fi
 
 | Use | Channel | Why | Status |
 | --- | --- | --- | --- |
-| Private playtest previews | A private Claude artifact page | No accounts to set up; the owner opens it on their own GPU | To test in M0.6: page up to 16 MB, binary files up to 15 MB each, up to 256 MB per version (published limits of the artifact tool); WebGPU and WASM behaviour unknown there |
+| Playtest previews | GitHub Pages, built by `.github/workflows/pages.yml` on every push to `main` (D-013) | The owner made the repository public for this; HTTPS for WebGPU; no extra account | Live at https://ganeshphutane-g.github.io/listening-post/ |
+| Private previews (not used) | A private Claude artifact page | Kept as an option if previews ever need to be private | Not tested; WebGPU and WASM behaviour unknown there |
 | Private previews, fallback | Cloudflare Pages | Free, custom headers, 25 MiB per file | Needs the owner's Cloudflare account |
-| Public mirror | GitHub Pages | Free | Only if the repository is public |
 | Public release | itch.io | Free; 500 MB and 1,000 files fit the budget | M6 |
 | Desktop app (optional, later) | Electron wrapper | Free | Same unsigned-app warnings as native builds; not planned for the slice |
 

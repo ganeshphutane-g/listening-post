@@ -1,0 +1,38 @@
+# Preview channel (MASTER_PLAN §7, M0.6, D-013): every push to main builds the game and publishes it on
+# GitHub Pages at https://ganeshphutane-g.github.io/listening-post/ (HTTPS, which WebGPU needs).
+# Only the checks that need no GPU run here; the harness runs in build sessions (npm run verify).
+name: Preview
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck && npm run test && npm run build && npm run check:bundle && npm run check:assets
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -86,3 +86,10 @@ Format: MASTER_PLAN §8.6. Newest at the bottom.
 - Alternatives: ambientCG first (Poly Haven's API gives sizes and MD5s, and its assets are scanned); JPEG sources (smaller, but a second lossy step before KTX2); 4k (4× the size for surfaces seen at arm's length in the dark).
 - Consequences: raw sources live only on the owner's computer (§8.9), so turning them into KTX2 (M4.3) runs there in an interactive session, or the processed files are committed from there. The credits screen must say "Powered by Poly Haven" (M6.5).
 - Revisit when: M4.3 starts, or a needed surface is missing from Poly Haven.
+
+## 2026-10-22 D-013 Previews on GitHub Pages, built by GitHub Actions
+- Context: MASTER_PLAN §7 and M0.6 said to try a private Claude artifact page first, with Cloudflare Pages as the fallback. The owner then made the repository public "so GitHub Pages can host previews" (2026-10-21).
+- Decision: `.github/workflows/pages.yml` builds every push to `main` (type check, unit tests, build, bundle and asset checks; the GPU harness stays in sessions) and deploys `dist/` to https://ganeshphutane-g.github.io/listening-post/. Pages is enabled with the Actions source.
+- Alternatives: Claude artifact page (WebGPU and WASM untested inside it, file limits, private by default — not needed for a public repo); Cloudflare Pages (needs the owner's account).
+- Consequences: every push to `main` is public within minutes, so `main` must stay green and nothing unreleasable may be committed. Actions minutes are free for public repositories. M0.6 is accepted when the owner opens the preview in Chrome and Safari on the Mac.
+- Revisit when: previews must become private, or the site nears GitHub Pages' 1 GB / 100 GB-a-month limits.
