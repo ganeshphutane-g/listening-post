@@ -15,7 +15,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: completes in a fresh session and prints all versions.
   - Needs: M0.1
   - Est: 1 run
-- [ ] M0.3 Harness
+- [x] M0.3 Harness
   - Do: Electron runners: `shoot` (single frame), `tour` (camera stops), `scenarios`, `bench`; render-target readback; fail on any page error.
   - Accept: tour renders through both backends; a planted error fails the run.
   - Needs: M0.2

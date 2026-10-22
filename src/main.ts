@@ -1,7 +1,8 @@
 // Browser pipeline test: Blender-baked lightmap + real-time flashlight shadows + volumetric fog
 // + screen-space reflections + bloom + film grain (three.js r186, WebGPU with WebGL2 fallback)
-// + Rapier physics crates. URL params: ?shot=1 (render fixed frames, then signal), ?webgl=1 (force WebGL2),
-// ?view=lightmap|uv (debug views), ?nopost=1, ?frames=N, ?diag=1
+// + Rapier physics crates. URL params: ?webgl=1 (force WebGL2), ?harness=1 (driven by tools/harness/run.mjs),
+// ?view=lightmap|uv (debug views), ?nopost=1
+import { HARNESS } from './debug/clock'; // first: swaps in the test clock before anything renders
 import * as THREE from 'three/webgpu';
 import {
   pass, mrt, output, normalView, metalness, roughness, vec2, vec3, sample, packNormalToRGB,
@@ -19,13 +20,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { flipLightmapV } from './render/lightmap';
-import { packReadback } from './render/readback';
+import { installHarness } from './debug/harness';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
-const SHOT = params.has('shot');
 const FORCE_WEBGL = params.has('webgl');
-const SHOT_FRAMES = Number(params.get('frames') || 24);
 const NOPOST = params.has('nopost');
 const VOL = 10; // layer for volumetric lighting
 const log = (...a: unknown[]) => console.log('[proto]', ...a);
@@ -39,7 +38,6 @@ interface BackendInfo {
     lost: Promise<{ reason: string; message: string }>;
   };
 }
-declare global { interface Window { __png?: string } }
 
 const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL: FORCE_WEBGL });
 renderer.setPixelRatio(1);
@@ -210,48 +208,19 @@ pipeline.outputNode = NOPOST ? colorTex : smaa(film(lit.add(glow), uniform(0.22)
 // ---------- loop ----------
 const flicker = new ImprovedNoise();
 let frame = 0, t = 0;
-const frameMs: number[] = [];
-if (SHOT) { for (let i = 0; i < 300; i++) world.step(); }
-syncCrates();
-renderer.setAnimationLoop(() => {
-  const t0 = performance.now();
+function tick(physics: boolean) {
   t += 1 / 60;
   const n = flicker.noise(t * 8, 0.5, 0);
   fogLamp.intensity = n < -0.35 ? 0.6 : 6 + n * 3;
-  if (!SHOT) { world.step(); syncCrates(); }
-  pipeline.render();
-  frameMs.push(performance.now() - t0);
-  frame++;
-  hud.textContent = SHOT ? (frame % 2 ? "\u200b" : "") : `${backend}  frame ${frame}`; // a DOM change per frame keeps the capture path compositing the canvas
-  if (SHOT && frame === SHOT_FRAMES) {
-    const resting = crates.every(({ body }) => {
-      const v = body.linvel(); return Math.hypot(v.x, v.y, v.z) < 0.05 && body.translation().y > 0.3;
-    });
-    const avg = frameMs.slice(4).reduce((a, b) => a + b, 0) / Math.max(1, frameMs.length - 4);
-    log('RESULT', JSON.stringify({ backend, cratesResting: resting, cpuFrameMsAvg: +avg.toFixed(1),
-      crateY: crates.map(({ body }) => +body.translation().y.toFixed(2)) }));
-    hud.textContent = '';
-    if (params.has('diag')) {
-      const c2 = document.createElement('canvas'); c2.width = 96; c2.height = 54;
-      const g = c2.getContext('2d')!; g.drawImage(renderer.domElement, 0, 0, 96, 54);
-      const px = g.getImageData(0, 0, 96, 54).data; let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
-      log('CANVAS_MEAN', (sum / (px.length / 4) / 3).toFixed(1));
-    }
-    renderer.setAnimationLoop(null);
-    readback().then(() => { document.title = 'SHOT_READY'; });
-  }
-});
-
-// Deterministic screenshot: render the final frame into a render target and read the pixels back,
-// so automated checks do not depend on the browser compositor (its capture came back blank under WebGPU)
-async function readback() {
-  const w = renderer.domElement.width, h = renderer.domElement.height;
-  const rt = new THREE.RenderTarget(w, h, { type: THREE.UnsignedByteType });
-  renderer.setRenderTarget(rt); pipeline.render(); renderer.setRenderTarget(null);
-  const px = await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h);
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const g = c.getContext('2d')!; const img = g.createImageData(w, h);
-  img.data.set(packReadback(px as Uint8Array, w, h, !isWebGPU));
-  g.putImageData(img, 0, 0);
-  window.__png = c.toDataURL('image/png');
+  if (physics) { world.step(); syncCrates(); }
+}
+syncCrates();
+if (HARNESS) {
+  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates });
+} else {
+  renderer.setAnimationLoop(() => {
+    tick(true);
+    pipeline.render();
+    hud.textContent = `${backend}  frame ${++frame}`;
+  });
 }

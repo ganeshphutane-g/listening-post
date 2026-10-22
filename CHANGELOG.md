@@ -4,3 +4,4 @@
 - 2026-10-21 M0.8: CLAUDE.md, HANDOFF.md, BACKLOG.md, DECISIONS.md (D-001…D-005), CHANGELOG.md, docs/ASSETS.md.
 - 2026-10-21 M0.2: `tools/bootstrap.sh` installs apt packages (Mesa Vulkan, Xvfb, Electron libs), `npm ci`, checksum-checked Electron 45.0.0 into `.tools/`, and bpy 5.2.2 on Python 3.13 with `--blender`; prints all versions. Electron harness renders the corridor through WebGPU and WebGL2 in the cloud session.
 - 2026-10-21 D-008: laptops and desktops only, every major browser, any window; new item M0.9 Responsive display; M0 gate, M0.6, M0.7 Mac-only. Development paused by the owner.
+- 2026-10-22 M0.3: Electron harness (`shoot`, `tour`, `scenarios`, `bench`, `selftest`) with a test clock, render-target readback, pixelmatch diffs against per-platform baselines; `npm run verify` now runs it (13 s on the M1).

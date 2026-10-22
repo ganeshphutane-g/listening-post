@@ -8,7 +8,7 @@ Browser first-person horror game (three.js WebGPU + Rapier). [MASTER_PLAN.md](MA
 2. Read [HANDOFF.md](HANDOFF.md), the top of [BACKLOG.md](BACKLOG.md), and the last 20 entries of [DECISIONS.md](DECISIONS.md).
 3. Pick **one** item: the first unchecked backlog item whose `Needs:` are all done. Never start a second.
 4. Build it in small commits on `main` (`<item id>: <imperative summary>`). Keep `main` green.
-5. Verify: `npm run verify`, then look at the screenshots (once the tour exists, M0.3).
+5. Verify: `npm run verify`, then open `tests/visual/out/tour/*.png` and look at them. A visual change you did not intend is a failure; an intended one: `npm run tour -- --update` and commit the new baselines with the change.
 6. Record: update [HANDOFF.md](HANDOFF.md) (template §8.4), tick [BACKLOG.md](BACKLOG.md), add to [DECISIONS.md](DECISIONS.md) (format §8.6), add a line to [CHANGELOG.md](CHANGELOG.md). Commit and push.
 7. Stop when the acceptance test passes, or after three failed verify cycles on the item (revert, log the blocker in HANDOFF.md).
 
@@ -27,8 +27,11 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server (WebGPU needs localhost or https) |
-| `npm run verify` | type check, unit tests, production build, JS gzip budget |
+| `npm run verify` | type check, unit tests, build, JS gzip budget, harness self-test, scenarios, screenshot tour (MASTER_PLAN §8.8) |
+| `npm run tour` / `npm run scenarios` / `npm run bench` | one harness command (needs `npm run build` first); options after `--`: `--backend webgpu\|webgl\|both`, `--size 1280x720`, `--dpr 2`, `--mode native\|vulkan\|swiftshader`, `--update`, `--verbose` |
+| `npm run harness -- shoot [stop]` | one still per backend into `tests/visual/out/shoot/` |
 | `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `bash tools/bootstrap.sh --blender`) |
-| `xvfb-run -a .tools/bin/electron --no-sandbox tools/harness/shoot.cjs <url> <out.png> [mode]` | one frame through the Electron harness (serve with `npx vite preview` first) |
 
-URL flags: `?webgl=1` force WebGL2 · `?shot=1` fixed frames + readback, sets title `SHOT_READY` · `?view=lightmap|uv` debug views · `?nopost=1` · `?frames=N` · `?diag=1`.
+URL flags: `?webgl=1` force WebGL2 · `?harness=1` test clock + `window.__harness`, sets title `HARNESS_READY` · `?view=lightmap|uv` debug views · `?nopost=1`.
+
+Harness notes: `tools/harness/launch.mjs` wraps Electron in `xvfb-run` with `--no-sandbox` on Linux. Baselines live in `tests/visual/baselines/<platform>-<mode>/<backend>/` (`darwin-native` from the owner's Mac, `linux-vulkan` from cloud runs); a missing baseline is created and the run passes, so commit new ones. Add tour stops in `tests/visual/tour.json` and scenarios in `src/debug/harness.ts`.
