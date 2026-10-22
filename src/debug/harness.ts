@@ -7,6 +7,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import { advanceClock, realNow } from './clock';
 import { packReadback } from '../render/readback';
 import type { DisplayState } from '../render/display';
+import type { Input } from '../player/input';
 
 export interface Stop { name: string; pos: [number, number, number]; target: [number, number, number] }
 export interface ScenarioResult { name: string; pass: boolean; detail: string }
@@ -23,6 +24,7 @@ export interface HarnessContext {
   rapier: typeof RAPIER;
   crates: { body: RAPIER.RigidBody; mesh: THREE.Object3D }[];
   display: () => DisplayState;
+  input: Input;
 }
 
 const STEP_MS = 1000 / 60;
@@ -58,6 +60,17 @@ export function installHarness(ctx: HarnessContext): void {
   }
 
   const scenarios: Record<string, () => ScenarioResult> = {
+    'pause-on-pointer-release': () => {
+      // M1.1: releasing pointer lock (Esc, alt-tab) pauses and shows the overlay; locking resumes.
+      // Real pointer lock needs a user gesture, so the scenario drives the same handler the browser event calls.
+      const overlay = document.getElementById('pause')!;
+      const before = ctx.input.paused;
+      ctx.input.setLocked(true);
+      const playing = !ctx.input.paused && overlay.hidden;
+      ctx.input.setLocked(false);
+      const paused = ctx.input.paused && !overlay.hidden;
+      return { name: 'pause-on-pointer-release', pass: before && playing && paused, detail: `start paused=${before}, locked→playing=${playing}, released→paused with overlay=${paused}` };
+    },
     'crates-rest': () => {
       const ys = ctx.crates.map(({ body }) => body.translation().y);
       const speeds = ctx.crates.map(({ body }) => { const v = body.linvel(); return Math.hypot(v.x, v.y, v.z); });

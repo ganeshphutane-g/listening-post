@@ -24,6 +24,8 @@ import { installHarness } from './debug/harness';
 import { runBench } from './debug/bench';
 import { installDisplay } from './render/display';
 import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device';
+import { loadSettings } from './core/settings';
+import { Input } from './player/input';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -207,6 +209,24 @@ const lit = colorTex.add(reflections.rgb.mul(0.8)).add(fog.mul(0.9));
 const glow = bloom(lit, 0.3, 0.4, 0.85);
 pipeline.outputNode = NOPOST ? colorTex : smaa(film(lit.add(glow), uniform(0.22)));
 
+// ---------- input: pointer-lock mouse look and gamepad (M1.1); walking comes with the controller (M1.2) ----------
+const input = new Input(renderer.domElement, loadSettings());
+const pauseOverlay = document.getElementById('pause')!;
+const showPause = (paused: boolean) => { pauseOverlay.hidden = !paused || params.has('bench'); }; // DOM only: never in harness stills
+input.onPauseChange = showPause;
+showPause(input.paused);
+const look = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(camera.quaternion);
+const MAX_PITCH = THREE.MathUtils.degToRad(85);
+function applyInput(dt: number) {
+  const pad = input.pollGamepad();
+  const { yaw, pitch } = input.look(dt, pad);
+  look.y += yaw;
+  look.x = THREE.MathUtils.clamp(look.x + pitch, -MAX_PITCH, MAX_PITCH);
+  camera.quaternion.setFromEuler(look);
+  if (input.wasPressed('flashlight')) torch.visible = !torch.visible; // battery and flicker come in M1.3
+  input.endFrame();
+}
+
 // ---------- loop ----------
 const flicker = new ImprovedNoise();
 let frame = 0, t = 0;
@@ -218,11 +238,14 @@ function tick(physics: boolean) {
 }
 syncCrates();
 if (HARNESS) {
-  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display });
+  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input });
 } else if (params.has('bench')) {
   runBench({ renderer, pipeline, camera, backend, isWebGPU, tick, display });
 } else {
-  renderer.setAnimationLoop(() => {
+  let last = performance.now();
+  renderer.setAnimationLoop((now: number) => {
+    applyInput(Math.min(0.1, (now - last) / 1000));
+    last = now;
     tick(true);
     pipeline.render();
     hud.textContent = `${backend}  frame ${++frame}`;

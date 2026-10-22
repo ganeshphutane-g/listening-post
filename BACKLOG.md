@@ -53,7 +53,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
 
 ## M1 Core feel
 
-- [ ] M1.1 Input
+- [x] M1.1 Input
   - Do: Pointer lock, raw mouse, sensitivity, invert, gamepad, remapping, settings persistence.
   - Accept: unit tests for mapping; scenario: pointer lock released on Esc opens pause.
   - Needs: all M0 items (including M0.9)

@@ -10,6 +10,10 @@
     /* interface text scales with the window height (D-008): 11 px on a 720p window, up to 22 px at 4K */
     #hud { position: fixed; left: 0.7em; top: 0.5em; color: #9a9; font: clamp(11px, 1.6vh, 22px)/1.3 monospace; pointer-events: none; }
     #device-notice { box-sizing: border-box; min-height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 24px; color: #c9c3b8; background: #050506; font: 17px/1.5 system-ui, sans-serif; text-align: center; }
+    #pause { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; background: rgba(3,3,4,0.55); color: #e8e1d4; font: clamp(14px, 2vh, 22px)/1.5 system-ui, sans-serif; pointer-events: none; }
+    #pause[hidden] { display: none; }
+    #pause h1 { margin: 0 0 0.3em; font-size: 1.6em; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+    #pause .keys { opacity: 0.7; font-size: 0.8em; }
     #bench-results { position: fixed; inset: 0; overflow: auto; box-sizing: border-box; padding: clamp(16px, 4vh, 48px); background: rgba(5,5,6,0.92); color: #d8d2c6; font: 15px/1.5 system-ui, sans-serif; }
     #bench-results .big { font-size: clamp(16px, 2.4vh, 26px); color: #fff3dc; }
     #bench-results pre { max-width: 100%; overflow: auto; padding: 12px; background: #111114; border: 1px solid #2a2a30; font: 12px/1.45 ui-monospace, monospace; }
@@ -20,6 +24,7 @@
 </head>
 <body>
   <div id="hud"></div>
+  <div id="pause" hidden><div><h1>Listening Post</h1><p>Click to play</p><p class="keys">Mouse: look · F: flashlight · Esc: pause · Alt+Enter: fullscreen</p></div></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

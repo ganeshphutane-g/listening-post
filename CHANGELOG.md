@@ -10,3 +10,4 @@
 - 2026-10-22 M0.5: `content/asset_manifest.json` v1 (12 materials, 4 HDRIs, Poly Haven CC0); `tools/fetch_assets.py` for the owner's computer (dry run: 40 files, 595 MB); ledger check in verify.
 - 2026-10-22 M0.6: GitHub Pages preview built by Actions on every push to `main`: https://ganeshphutane-g.github.io/listening-post/ (owner check in Chrome and Safari pending).
 - 2026-10-22 M0.7: in-game benchmark `?bench=1` (60 s path; FPS, 1% low, p95, draw calls, triangles, backend, GPU, build; copy and download); harness `benchpage` checks it in verify (owner results pending).
+- 2026-10-22 M1.1: input — rebindable actions (swap on conflict), raw-mouse pointer lock, gamepad, saved settings, pause overlay when the pointer is released; mouse look and F flashlight toggle in the preview; scenario `pause-on-pointer-release`. Started before the M0 gate closed, at the owner's request for a 2-hour build.
