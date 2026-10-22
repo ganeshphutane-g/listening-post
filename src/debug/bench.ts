@@ -20,6 +20,10 @@ export interface BenchContext {
 const asked = Number(new URLSearchParams(location.search).get('bench'));
 const DURATION_S = asked >= 5 ? asked : 60;
 const WARMUP_S = 2; // first frames compile shaders; they are flown but not counted
+// a frame this long means the browser paused the page (window behind others, minimised, tab switched); browsers
+// do not always report that as a hidden tab, so the run starts over instead of averaging a 30-second frame in
+const STALL_MS = 500;
+const MAX_RESTARTS = 3;
 
 // the corridor walk: entry → crates → lamp → far end and back toward the middle
 const PATH = new THREE.CatmullRomCurve3([
@@ -48,12 +52,17 @@ async function gpuName(isWebGPU: boolean): Promise<string> {
 export function runBench(ctx: BenchContext): void {
   const hud = document.getElementById('hud')!;
   const deltas: number[] = [];
-  let start = -1, last = -1, interrupted = '';
+  let start = -1, last = -1, interrupted = '', restarts = 0;
   let maxDraw = 0, maxTris = 0, sumDraw = 0, sumTris = 0, counted = 0;
   document.addEventListener('visibilitychange', () => { if (document.hidden) interrupted = 'the tab was hidden during the run'; });
   const pos = new THREE.Vector3(), look = new THREE.Vector3();
 
   ctx.renderer.setAnimationLoop((now: number) => {
+    if (last >= 0 && now - last > STALL_MS) {
+      restarts++;
+      if (restarts > MAX_RESTARTS) interrupted = `the page was paused ${restarts} times (keep the window in front)`;
+      else { start = -1; deltas.length = 0; maxDraw = maxTris = sumDraw = sumTris = counted = 0; }
+    }
     if (start < 0) start = now;
     const t = (now - start) / 1000;
     const u = Math.min(1, t / (DURATION_S + WARMUP_S));
@@ -70,7 +79,7 @@ export function runBench(ctx: BenchContext): void {
       sumDraw += drawCalls; sumTris += triangles; counted++;
     }
     last = now;
-    hud.textContent = t < WARMUP_S ? 'Benchmark: warming up…' : `Benchmark ${Math.floor(t - WARMUP_S)} / ${DURATION_S} s`;
+    hud.textContent = (t < WARMUP_S ? 'Benchmark: warming up…' : `Benchmark ${Math.floor(t - WARMUP_S)} / ${DURATION_S} s`) + (restarts ? ` (restarted ${restarts}×: keep this window in front)` : '');
     if (u >= 1) {
       ctx.renderer.setAnimationLoop(null);
       void finish();
@@ -86,7 +95,7 @@ export function runBench(ctx: BenchContext): void {
       ...frameStats(deltas),
       drawCallsAvg: Math.round(sumDraw / Math.max(1, counted)), drawCallsMax: maxDraw,
       trianglesAvg: Math.round(sumTris / Math.max(1, counted)), trianglesMax: maxTris,
-      durationS: DURATION_S, valid: !interrupted && DURATION_S === 60, note: interrupted || (DURATION_S === 60 ? 'ok' : 'short run: not comparable with 60 s results'),
+      durationS: DURATION_S, restarts, valid: !interrupted && DURATION_S === 60, note: interrupted || (DURATION_S === 60 ? 'ok' : 'short run: not comparable with 60 s results'),
     };
     console.log('[bench]', JSON.stringify(result));
     hud.textContent = '';
