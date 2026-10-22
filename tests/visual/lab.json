@@ -1,0 +1,31 @@
+{
+  "note": "Feel Lab stills (M1.7), shot with: npm run harness -- shoot --stops tests/visual/lab.json --query lab=1",
+  "stops": [
+    {
+      "name": "lab-overview",
+      "pos": [
+        40,
+        1.7,
+        0.6
+      ],
+      "target": [
+        40,
+        1.0,
+        -12
+      ]
+    },
+    {
+      "name": "lab-door",
+      "pos": [
+        41.5,
+        1.6,
+        -13
+      ],
+      "target": [
+        40,
+        1.2,
+        -17.5
+      ]
+    }
+  ]
+}

@@ -9,7 +9,7 @@
 - Repository: https://github.com/ganeshphutane-g/listening-post (public, branch `main`)
 
 ## This run
-- Items: M1.6 Menus and loading — DONE; M1.5 Footsteps and impacts — DONE; M1.4 Interaction — DONE (inspect-and-rotate deferred to M1.7, where inspectable objects exist); M1.3 Flashlight — DONE; M1.2 Character controller — DONE; M1.1 Input — DONE (started before the M0 gate closed, because the owner asked for a 2-hour build; M0.6/M0.7 only wait for the owner's browser check); M0.3 Harness — DONE; M0.9 Responsive display — DONE (done before M0.4 at the owner's priority); M0.4 Lightmap pipeline — DONE; M0.5 Asset routes — DONE; M0.6 Preview channel — BUILT, owner check pending; M0.7 Benchmark — BUILT, owner results pending
+- Items: M1.7 Feel Lab — BUILT, owner playtest pending (`?lab=1`, guide in docs/PLAYTESTS.md); M1.6 Menus and loading — DONE; M1.5 Footsteps and impacts — DONE; M1.4 Interaction — DONE (inspect-and-rotate deferred to M1.7, where inspectable objects exist); M1.3 Flashlight — DONE; M1.2 Character controller — DONE; M1.1 Input — DONE (started before the M0 gate closed, because the owner asked for a 2-hour build; M0.6/M0.7 only wait for the owner's browser check); M0.3 Harness — DONE; M0.9 Responsive display — DONE (done before M0.4 at the owner's priority); M0.4 Lightmap pipeline — DONE; M0.5 Asset routes — DONE; M0.6 Preview channel — BUILT, owner check pending; M0.7 Benchmark — BUILT, owner results pending
 - Changes:
   - Harness (`tools/harness/run.mjs`, D-009): test clock makes frames identical run to run; commands `shoot`, `tour`, `scenarios`, `bench`, `benchpage`, `responsive`, `selftest`; fails on any page or GPU error; 10-minute watchdog; baselines per platform in `tests/visual/baselines/<platform>-<mode>/`
   - Responsive display (`src/render/display.ts`, D-008, D-010): pixel ratio capped by the tier's pixel budget, Hor+ field of view between 4:3 and 21:9, interface text scales with height, Alt+Enter fullscreen, phone/tablet notice
@@ -28,7 +28,8 @@
 
 ## Next
 - Owner: open the preview in Chrome and Safari, and run `?bench=1` and `?bench=1&webgl=1` in each (closes M0.6 and M0.7, and the M0 gate).
-- Then M1.7 Feel Lab: a test room with every interactable and surface type, and the first owner playtest (playtest 1 notes, template in MASTER_PLAN §8.7).
+- Owner: playtest 1 in the Feel Lab (closes M1.7 and the M1 gate).
+- Then M2.1 Layout data (rooms and openings for L1–L3 with a connectivity validator; needs all M1 items).
 
 ## Known issues
 - Pointer lock could not be checked in the automated browser (it needs a real user click); the logic is covered by the scenario, the owner checks the real lock.
@@ -48,6 +49,7 @@
 - Target devices (owner, 2026-10-21): laptops and desktops only, Mac and Windows, every major browser; responsive to any window. Built in M0.9 (D-008).
 
 ## Questions for you
+- Playtest 1: follow `docs/PLAYTESTS.md` (Feel Lab at https://ganeshphutane-g.github.io/listening-post/?lab=1) and send the filled template.
 - Please open https://ganeshphutane-g.github.io/listening-post/ in Chrome and in Safari: does it show the corridor? Press Play: does the mouse look around, do WASD/Shift/C/Q/E move you, can you drag a crate with the left mouse, does Esc show the pause screen, does F switch the torch? Then add `?bench=1` to the address, wait 62 s, press Download file; repeat with `?bench=1&webgl=1`. Send the four files.
 - Shall I run `python3 tools/fetch_assets.py` on this Mac (downloads 595 MB of CC0 Poly Haven textures into `assets_src/`, not into git)? It is needed before the art pass (M4.3), not before.
 

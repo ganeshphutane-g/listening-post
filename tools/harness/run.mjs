@@ -15,6 +15,8 @@
 //             --mode native|vulkan|swiftshader (default: native on macOS, vulkan on Linux)
 //             --sizes 1280x720,1920x1080   window sizes for `responsive`
 //             --view lightmap|uv   tour a debug view (own baselines, e.g. webgpu-view-lightmap/)
+//             --stops file.json   camera stops for shoot/tour (default tests/visual/tour.json)
+//             --query a=1&b=2     extra URL parameters, e.g. lab=1 for the Feel Lab
 //             --update   write current frames as the new baselines
 import { app, BrowserWindow, nativeImage } from 'electron';
 import { createServer } from 'node:http';
@@ -25,7 +27,7 @@ import pixelmatch from 'pixelmatch';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const argv = process.argv.slice(process.argv.findIndex((a) => a.endsWith('run.mjs')) + 1);
-const VALUED = new Set(['--backend', '--size', '--dpr', '--mode', '--sizes', '--view']);
+const VALUED = new Set(['--backend', '--size', '--dpr', '--mode', '--sizes', '--view', '--stops', '--query']);
 const positionals = argv.filter((a, i) => !a.startsWith('--') && !VALUED.has(argv[i - 1]));
 const opt = (name, def) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : def; };
 const flag = (name) => argv.includes(`--${name}`);
@@ -36,6 +38,8 @@ const DPR = Number(opt('dpr', '1'));
 const MODE = opt('mode', process.platform === 'linux' ? 'vulkan' : 'native');
 const PLATFORM = `${process.platform}-${MODE}`;
 const VIEW = opt('view', '');
+const STOPS = opt('stops', 'tests/visual/tour.json');
+const QUERY = opt('query', '') ? `&${opt('query', '')}` : '';
 const MAX_DIFF = 0.002; // fraction of pixels allowed to differ from a baseline
 const OUT = join(ROOT, 'tests/visual/out', VIEW ? `${command}-view-${VIEW}` : command);
 const BASELINES = join(ROOT, 'tests/visual/baselines', PLATFORM);
@@ -190,9 +194,9 @@ async function run() {
       report.results.push(result);
     }
   } else {
-    const tour = JSON.parse(await readFile(join(ROOT, 'tests/visual/tour.json'), 'utf8')).stops;
+    const tour = JSON.parse(await readFile(join(ROOT, STOPS), 'utf8')).stops;
     for (const backend of BACKENDS) {
-      await openGame(win, base, backend, VIEW ? `&view=${VIEW}` : '');
+      await openGame(win, base, backend, (VIEW ? `&view=${VIEW}` : '') + QUERY);
       if (command === 'shoot') {
         const stop = tour.find((s) => s.name === positional) ?? tour[0];
         const { png: data } = await call(win, `window.__harness.still(${JSON.stringify(stop)})`);

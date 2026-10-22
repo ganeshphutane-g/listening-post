@@ -33,6 +33,7 @@ import { Interaction } from './player/interaction';
 import { EventBus, type GameEvents } from './core/events';
 import { SoundEvents } from './audio/soundEvents';
 import { installDebugOverlay } from './debug/overlay';
+import { LAB_SPAWN, buildFeelLab } from './world/feelLab';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -223,13 +224,16 @@ pipeline.outputNode = NOPOST ? colorTex : smaa(film(lit.add(glow), uniform(0.22)
 
 // ---------- input (M1.1) and the player's body (M1.2) ----------
 const input = new Input(renderer.domElement, settings);
-const player = new CharacterController(RAPIER, world, { x: 0.35, y: 0, z: 1.2 });
+const LAB = params.has('lab'); // Feel Lab (M1.7): a test room beside the corridor
+const player = new CharacterController(RAPIER, world, LAB ? LAB_SPAWN : { x: 0.35, y: 0, z: 1.2 });
 player.headBob = settings.headBob;
 let crouchLatched = false;
 const interaction = new Interaction(RAPIER, world, player.collider);
 crates.forEach(({ body }, i) => interaction.register(crateColliders[i], { kind: 'prop', body })); // ~25 kg: dragged, not lifted
 player.onFootstep = (e) => sound.footstep(e.position, e.gait, player.collider);
-if (params.has('debug')) installDebugOverlay(bus);
+if (params.has('debug') || LAB) installDebugOverlay(bus);
+const lab = LAB ? buildFeelLab(scene, world, RAPIER, sound, interaction, crateMesh) : null;
+if (LAB) scene.environmentIntensity = 0.15; // the lab has no bake; a little more image light helps
 // menus (M1.6): the title's Play grants pointer lock and audio; settings apply at once and are saved
 const audio = new AudioContext();
 const menus = params.has('bench') ? null : new Menus({ input, settings, audio, onSettings: (s) => {
@@ -244,6 +248,7 @@ const prompt = document.getElementById('prompt')!;
 let throwHeld = false;
 const viewDir = () => ({ x: -Math.sin(look.y) * Math.cos(look.x), y: Math.sin(look.x), z: -Math.cos(look.y) * Math.cos(look.x) });
 const look = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(camera.quaternion);
+if (LAB) look.set(0, 0, 0, 'YXZ'); // face down the lab, -z
 const MAX_PITCH = THREE.MathUtils.degToRad(85);
 const STEP = 1 / 60; // fixed simulation step (§4.3); rendering runs every animation frame
 let acc = 0;
@@ -287,7 +292,7 @@ function tick(physics: boolean) {
   t += 1 / 60;
   const n = flicker.noise(t * 8, 0.5, 0);
   fogLamp.intensity = n < -0.35 ? 0.6 : 6 + n * 3;
-  if (physics) { world.step(sound.queue); sound.drain(1 / 60); syncCrates(); }
+  if (physics) { world.step(sound.queue); sound.drain(1 / 60); syncCrates(); lab?.sync(); }
   flashlight.update(1 / 60);
 }
 syncCrates();
