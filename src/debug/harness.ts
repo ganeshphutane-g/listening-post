@@ -40,6 +40,15 @@ export interface HarnessContext {
 
 const STEP_MS = 1000 / 60;
 
+/**
+ * ?harness=1&report=1: run every scenario and one still inside this browser, then post the results to the
+ * page's own server (tools/harness/bench_server.mjs). Used for browsers that cannot be scripted from outside
+ * (Safari without Screen Recording or Apple-event JavaScript).
+ */
+async function postReport(body: Record<string, unknown>): Promise<void> {
+  await fetch('./__selftest', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
+}
+
 export function installHarness(ctx: HarnessContext): void {
   const { renderer, pipeline, camera } = ctx;
 
@@ -191,7 +200,24 @@ export function installHarness(ctx: HarnessContext): void {
       };
     },
   };
+  async function selfReport() {
+    const errors: string[] = [];
+    addEventListener('error', (e) => errors.push(String(e.message)));
+    const results = window.__harness!.scenarios().map((name) => {
+      try { return window.__harness!.scenario(name); } catch (e) { return { name, pass: false, detail: `threw: ${String(e)}` }; }
+    });
+    const still = await window.__harness!.still({ name: 'entry', pos: [0.35, 1.65, 1.2], target: [-0.2, 1.35, -20] });
+    // a frame that rendered is not black: average brightness of the still
+    const img = new Image(); img.src = still.png; await img.decode();
+    const c = document.createElement('canvas'); c.width = 64; c.height = 36;
+    const g = c.getContext('2d')!; g.drawImage(img, 0, 0, 64, 36);
+    const px = g.getImageData(0, 0, 64, 36).data; let sum = 0;
+    for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+    await postReport({ kind: 'selftest', backend: ctx.backend, userAgent: navigator.userAgent, date: new Date().toISOString(),
+      passed: results.filter((r) => r.pass).length, total: results.length, results, stillMeanBrightness: +(sum / (64 * 36 * 3)).toFixed(1), stillSize: `${still.width}x${still.height}`, errors });
+  }
   document.title = 'HARNESS_READY';
+  if (new URLSearchParams(location.search).has('report')) void selfReport();
   if (new URLSearchParams(location.search).has('plant')) {
     // the runner's self-test: an uncaught error after start-up must fail the run
     setTimeout(() => { throw new Error('PLANTED_ERROR'); }, 0);

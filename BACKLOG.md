@@ -30,12 +30,12 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: dry run lists files and licences; ledger check passes.
   - Needs: M0.4
   - Est: 1 run
-- [ ] M0.6 Preview channel
+- [x] M0.6 Preview channel
   - Do: Try a private Claude artifact page first; fall back to Cloudflare Pages.
   - Accept: the owner opens the preview on the Mac in Chrome and Safari (Windows when a tester is available, D-008).
   - Needs: M0.5
   - Est: 1 run
-- [ ] M0.7 Benchmark
+- [x] M0.7 Benchmark
   - Do: `?bench=1`: 60-second camera path; writes average FPS, 1% low, 95th-percentile frame time, draw calls, triangles, backend, GPU string; copy button and file download.
   - Accept: the owner returns results from the Mac in Chrome and Safari (Windows when a tester is available, D-008).
   - Needs: M0.6
@@ -83,7 +83,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: scenario walks every menu; settings persist after reload.
   - Needs: M1.5
   - Est: 1 run
-- [ ] M1.7 Feel Lab
+- [x] M1.7 Feel Lab
   - Do: Test room with every interactable and surface type; first owner build.
   - Accept: playtest 1 notes logged.
   - Needs: M1.6

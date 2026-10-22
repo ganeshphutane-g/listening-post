@@ -39,7 +39,7 @@ async function gpuName(isWebGPU: boolean): Promise<string> {
     if (isWebGPU && gpu) {
       const a = await gpu.requestAdapter();
       const i = a?.info as unknown as Record<string, string> | undefined;
-      return [i?.vendor, i?.architecture, i?.device, i?.description].filter(Boolean).join(' / ') || 'unknown';
+      return [...new Set([i?.vendor, i?.architecture, i?.device, i?.description].filter(Boolean))].join(' / ') || 'unknown'; // Safari repeats 'apple'
     }
     const gl = document.createElement('canvas').getContext('webgl2');
     const ext = gl?.getExtension('WEBGL_debug_renderer_info');
@@ -98,6 +98,11 @@ export function runBench(ctx: BenchContext): void {
       durationS: DURATION_S, restarts, valid: !interrupted && DURATION_S === 60, note: interrupted || (DURATION_S === 60 ? 'ok' : 'short run: not comparable with 60 s results'),
     };
     console.log('[bench]', JSON.stringify(result));
+    // ?report=1: also send the result to the page's own server (tools/harness/bench_server.mjs saves it), so a
+    // run in a browser nobody can script still gets its file back; harmless 404 on hosts without the endpoint
+    if (new URLSearchParams(location.search).has('report')) {
+      void fetch('./__bench', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(result) }).catch(() => {});
+    }
     hud.textContent = '';
     showResults(result);
   }

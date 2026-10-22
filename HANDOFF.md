@@ -1,14 +1,15 @@
-# HANDOFF — 2026-10-22 15:10 IST — run 3 (interactive, owner's Mac, 2-hour build session)
+# HANDOFF — 2026-10-22 16:45 IST — run 3 (interactive, owner's Mac): 2-hour build session, then playtest 1 run by Claude
 
 > **PAUSED for scheduled runs (owner, 2026-10-21).** The routine "Listening Post daily build" stays disabled. On 2026-10-22 the owner asked for a 2-hour interactive build session; scheduled runs resume only when the owner says so (then re-enable it at https://claude.ai/code/routines/trig_01GDfwsaPBiuagjXtDGfS8EA and delete this line). If a scheduled run starts anyway, change nothing and stop.
 
 ## State
-- Milestone: M0 Pipeline — 7/9 items done (M0.1, M0.2, M0.3, M0.4, M0.5, M0.8, M0.9); M0.6 and M0.7 are built and wait for the owner's check
+- Milestones: M0 Pipeline 9/9 done; M1 Core feel 7/7 done (playtest 1 logged in docs/PLAYTESTS.md); M2 2/7 (M2.1, M2.5)
 - Build: green — npm run verify (45 s on the M1): tsc strict; 52/52 unit tests (incl. layout validation and the soft-lock checker); menus walk + settings persistence after reload; scenarios incl. pause-on-pointer-release, 4 controller, 3 interaction and the sound-events scenario; build; JS 2.07 MB gzip (limit 2.50); asset ledger; harness self-test; scenarios; tour (6 stops) + lightmap-view tour (0.000% vs baselines, regenerated for the new beam); responsive at 7 sizes, 1× and 2×; benchmark page on both backends
 - Preview: https://ganeshphutane-g.github.io/listening-post/ (GitHub Pages, rebuilt on every push to `main`, D-013)
 - Repository: https://github.com/ganeshphutane-g/listening-post (public, branch `main`)
 
 ## This run
+- Playtest 1 (owner asked Claude to run it): benchmarks in Chrome and Safari on both backends in `docs/bench/`; Feel Lab played in Chrome; Safari self-test 12/12 on both backends. Fixed: held doors did not open when walked into; silent pointer-lock refusal; benchmark spoiled by browser pauses. Added `?nolock=1`, `?report=1`, `tools/harness/bench_server.mjs`. M0.6, M0.7, M1.7 closed.
 - Items: M2.5 Objective graph — DONE (out of order: pure logic over the layout, and M2.2 would not fit in the time left); M2.1 Layout data — DONE (started before the M1 gate closed; layout data does not depend on control feel); M1.7 Feel Lab — BUILT, owner playtest pending (`?lab=1`, guide in docs/PLAYTESTS.md); M1.6 Menus and loading — DONE; M1.5 Footsteps and impacts — DONE; M1.4 Interaction — DONE (inspect-and-rotate deferred to M1.7, where inspectable objects exist); M1.3 Flashlight — DONE; M1.2 Character controller — DONE; M1.1 Input — DONE (started before the M0 gate closed, because the owner asked for a 2-hour build; M0.6/M0.7 only wait for the owner's browser check); M0.3 Harness — DONE; M0.9 Responsive display — DONE (done before M0.4 at the owner's priority); M0.4 Lightmap pipeline — DONE; M0.5 Asset routes — DONE; M0.6 Preview channel — BUILT, owner check pending; M0.7 Benchmark — BUILT, owner results pending
 - Changes:
   - Harness (`tools/harness/run.mjs`, D-009): test clock makes frames identical run to run; commands `shoot`, `tour`, `scenarios`, `bench`, `benchpage`, `responsive`, `selftest`; fails on any page or GPU error; 10-minute watchdog; baselines per platform in `tests/visual/baselines/<platform>-<mode>/`
@@ -30,11 +31,11 @@
 - Evidence (MacBook Air M1, Metal): tour 0.000% on 5 stops × 2 backends; deliberate baseline swap fails at 40% with a diff image; planted page error caught; responsive buffers e.g. 1440×900@2× → 1821×1138, 3440×1440 → 2225×931 (Medium budget); benchmark page 60 FPS avg, 56 FPS 1% low, 68 draw calls, 61k triangles at 960×540 (vsync-capped)
 
 ## Next
-- Owner: open the preview in Chrome and Safari, and run `?bench=1` and `?bench=1&webgl=1` in each (closes M0.6 and M0.7, and the M0 gate).
-- Owner: playtest 1 in the Feel Lab (closes M1.7 and the M1 gate).
 - Then M2.2 Greybox generator (Blender script builds zone meshes and colliders from `content/layout.json`; needs M2.1).
 
 ## Known issues
+- Performance on the M1 at full Retina window: WebGPU 49 FPS (Chrome) / 43 FPS (Safari) average, 1% lows ~25 FPS; WebGL2 27–31 FPS. Medium's 2 MP budget or the post chain (SSR, volumetric fog, bloom) needs tuning for the M1 (M4.7); WebGL2 needs a lighter default. Feel Lab runs at ~60 FPS.
+- Safari was checked through a localhost build of the same commit (no Screen Recording permission to watch the Pages preview there).
 - Feel Lab props are spawned slightly above the floor, so they emit impact events while settling in the first second after load; spawn them at rest (or ignore impacts before the first second) before the creature listens (M3).
 - M2.2 (greybox generator) is next in order; M2.5 was built ahead of it. M2.3, M2.4 and M2.6 remain.
 - Pointer lock could not be checked in the automated browser (it needs a real user click); the logic is covered by the scenario, the owner checks the real lock.
@@ -55,8 +56,7 @@
 
 ## Questions for you
 - Layout review (M2 gate, no rush): floor plans of L1–L3 are in `docs/layout.svg` (open it in a browser; data in `content/layout.json`, decision D-020). Anything to add, cut or move?
-- Playtest 1: follow `docs/PLAYTESTS.md` (Feel Lab at https://ganeshphutane-g.github.io/listening-post/?lab=1) and send the filled template.
-- Please open https://ganeshphutane-g.github.io/listening-post/ in Chrome and in Safari: does it show the corridor? Press Play: does the mouse look around, do WASD/Shift/C/Q/E move you, can you drag a crate with the left mouse, does Esc show the pause screen, does F switch the torch? Then add `?bench=1` to the address, wait 62 s, press Download file; repeat with `?bench=1&webgl=1`. Send the four files.
+- Optional, 10 minutes: play the Feel Lab yourself with a real mouse (https://ganeshphutane-g.github.io/listening-post/?lab=1) and answer playtest questions 1 and 4 (tension, feel) — especially whether doors now open too easily.
 - Shall I run `python3 tools/fetch_assets.py` on this Mac (downloads 595 MB of CC0 Poly Haven textures into `assets_src/`, not into git)? It is needed before the art pass (M4.3), not before.
 
 ## Usage note

@@ -1,0 +1,73 @@
+{
+  "kind": "selftest",
+  "backend": "WebGL2",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+  "date": "2026-10-22T11:05:24.558Z",
+  "passed": 12,
+  "total": 12,
+  "results": [
+    {
+      "name": "controller-corridor-walk",
+      "pass": true,
+      "detail": "after 4 s walk: x=0.35 y=0.02 z=-4.97; after sprinting: stamina=0.00 gait=walk"
+    },
+    {
+      "name": "controller-step-height",
+      "pass": true,
+      "detail": "0.30 m step: feet y=0.32 z=-4.59 grounded=true; 0.45 m step: feet y=0.02 z=-1.70"
+    },
+    {
+      "name": "controller-slope-limit",
+      "pass": true,
+      "detail": "30° ramp: feet y=1.96; 55° ramp: feet y=0.02"
+    },
+    {
+      "name": "controller-crouch-beam",
+      "pass": true,
+      "detail": "standing stopped at z=-2.10; crouching reached z=-2.92; stays crouched under the beam=true"
+    },
+    {
+      "name": "interaction-door-drag",
+      "pass": true,
+      "detail": "grabbed=true; a 0.35 m step opened it to 49.5°; walking on: 110.0° (limit 110°); backing away closed it to 0.0°; pressing forward while touching it: 109.9°"
+    },
+    {
+      "name": "interaction-throw-distance",
+      "pass": true,
+      "detail": "grabbed=true; launched at 9.00 m/s; landed 4.77 m away (tuned range 3.5–7.5 m)"
+    },
+    {
+      "name": "interaction-drawer-limits",
+      "pass": true,
+      "detail": "grabbed=true; pulled out to 0.400 m (travel 0.4); pushed in to 0.000 m"
+    },
+    {
+      "name": "sound-events",
+      "pass": true,
+      "detail": "4 footsteps (concrete_wet, 57 dB, e.g. step_concrete_wet_walk_4); 1 impacts, loudest 86 dB (impact_concrete_wet_1)"
+    },
+    {
+      "name": "menus",
+      "pass": true,
+      "detail": "ok title shown; ok settings from title; ok flashlight rebound to G; ok back to title; ok playing: no menu; ok pointer released: pause menu; ok settings from pause; ok back to pause; ok resumed; ok quit to title"
+    },
+    {
+      "name": "pause-on-pointer-release",
+      "pass": true,
+      "detail": "start paused=true, locked→playing=true, released→paused with overlay=true"
+    },
+    {
+      "name": "crates-rest",
+      "pass": true,
+      "detail": "y=0.45,1.35,0.45,0.45,1.35,0.45 maxSpeed=0.000"
+    },
+    {
+      "name": "crate-drop",
+      "pass": true,
+      "detail": "y=0.450 speed=0.000"
+    }
+  ],
+  "stillMeanBrightness": 25.4,
+  "stillSize": "2014x1029",
+  "errors": []
+}
