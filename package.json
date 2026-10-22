@@ -15,9 +15,9 @@
     "scenarios": "node tools/harness/launch.mjs scenarios",
     "bench": "node tools/harness/launch.mjs bench",
     "responsive": "node tools/harness/launch.mjs responsive && node tools/harness/launch.mjs responsive --dpr 2 --sizes 1280x800,1440x900",
-    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle && node tools/harness/launch.mjs selftest && npm run scenarios && npm run tour && npm run responsive",
+    "verify": "npm run typecheck && npm run test && npm run build && npm run check:bundle && node tools/harness/launch.mjs selftest && npm run scenarios && npm run tour && node tools/harness/launch.mjs tour --view lightmap && npm run responsive",
     "assets:crate": ".venv/bin/python tools/blender/make_crate.py public/assets/crate.glb",
-    "assets:corridor": ".venv/bin/python tools/blender/bake_corridor.py public/assets 256 1024 assets_src"
+    "assets:corridor": ".venv/bin/python tools/blender/bake_corridor.py public/assets 256 1024 assets_src && node tools/pipeline/encode_lightmap.mjs assets_src/corridor_lm.exr public/assets/corridor_lm.ktx2"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",

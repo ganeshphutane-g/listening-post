@@ -20,7 +20,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: tour renders through both backends; a planted error fails the run.
   - Needs: M0.2
   - Est: 1 run
-- [ ] M0.4 Lightmap pipeline
+- [x] M0.4 Lightmap pipeline
   - Do: Bake script (Cycles + denoise), UV orientation fix, encoding test (RGBM KTX2 vs HDR KTX2), lightmap debug view.
   - Accept: debug view matches the reference; encoded map within 2 MB per 1024²; no visible banding in the tour.
   - Needs: M0.3

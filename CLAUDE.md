@@ -4,7 +4,7 @@ Browser first-person horror game (three.js WebGPU + Rapier). [MASTER_PLAN.md](MA
 
 ## Every run (MASTER_PLAN §0)
 
-1. Bootstrap: `bash tools/bootstrap.sh` (add `--blender` only if the run bakes or exports; `--no-apt` on the owner's computer). Electron lands at `.tools/bin/electron`.
+1. Bootstrap: `bash tools/bootstrap.sh` (add `--blender` only if the run bakes or exports, `--ktx` only if it encodes textures or lightmaps; `--no-apt` on the owner's computer). Electron lands at `.tools/bin/electron`, ktx at `.tools/ktx/bin/ktx`.
 2. Read [HANDOFF.md](HANDOFF.md), the top of [BACKLOG.md](BACKLOG.md), and the last 20 entries of [DECISIONS.md](DECISIONS.md).
 3. Pick **one** item: the first unchecked backlog item whose `Needs:` are all done. Never start a second.
 4. Build it in small commits on `main` (`<item id>: <imperative summary>`). Keep `main` green.
@@ -30,8 +30,10 @@ To change MASTER_PLAN.md: write a decision in DECISIONS.md first, then edit the 
 | `npm run verify` | type check, unit tests, build, JS gzip budget, harness self-test, scenarios, screenshot tour (MASTER_PLAN §8.8) |
 | `npm run tour` / `npm run scenarios` / `npm run bench` | one harness command (needs `npm run build` first); options after `--`: `--backend webgpu\|webgl\|both`, `--size 1280x720`, `--dpr 2`, `--mode native\|vulkan\|swiftshader`, `--update`, `--verbose` |
 | `npm run harness -- shoot [stop]` | one still per backend into `tests/visual/out/shoot/` |
+| `npm run tour -- --view lightmap` | tours the lightmap debug view against its own baselines (part of verify) |
 | `npm run responsive` | resizes the running game through laptop window sizes at 1× and 2× (no stretching, pixel budget, phone notice) |
-| `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `bash tools/bootstrap.sh --blender`) |
+| `npm run assets:crate` / `npm run assets:corridor` | regenerate Blender assets into `public/assets/` (needs `bash tools/bootstrap.sh --blender --ktx`); the corridor bake writes EXRs to `assets_src/` and encodes `corridor_lm.ktx2` |
+| `node tools/pipeline/encode_lightmap.mjs <in.exr> <out.ktx2>` | denoised EXR → half-float KTX2, fails above 2 MB per 1024² |
 
 URL flags: `?webgl=1` force WebGL2 · `?device=touch` pretend to be a phone (shows the notice) · `?harness=1` test clock + `window.__harness`, sets title `HARNESS_READY` · `?view=lightmap|uv` debug views · `?nopost=1`.
 

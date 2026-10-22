@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 # Install every pinned tool for a fresh session (MASTER_PLAN §0 step 2, §4.1). Idempotent.
-# Usage: bash tools/bootstrap.sh [--blender] [--no-apt]
+# Usage: bash tools/bootstrap.sh [--blender] [--ktx] [--no-apt]
 #   --blender  also create .venv with bpy (only for runs that bake or export, §0)
+#   --ktx      also install KTX-Software (only for runs that encode textures or lightmaps, D-011)
 #   --no-apt   skip the system packages (owner's computer, or no root)
 # Ends by printing every tool version; exits non-zero if any step fails.
 set -euo pipefail
 
 ELECTRON_VERSION=45.0.0
 BPY_VERSION=5.2.2
+KTX_VERSION=4.4.2
+# SHA-256 of the KTX-Software release files, taken 2026-10-22 (the Linux one also matches Khronos' .sha1).
+ktx_sha256() {
+  case "$1" in
+    linux-x64) echo a8781bad05f9624edbf910b7f258cd0a4ba7d3e63b49ecc0a0ab440bf6a0a245 ;;
+    darwin-arm64) echo 500bd8f9d63358c3f3a0d83b724c8574436a72c37dc0e4bad90ec1ca38032c3c ;;
+  esac
+}
 # From https://github.com/electron/electron/releases/download/v45.0.0/SHASUMS256.txt, pinned here
 # so a tampered release download fails the check instead of being trusted.
 # A case, not an associative array: macOS ships bash 3.2.
@@ -24,10 +33,12 @@ APT_PACKAGES=(mesa-vulkan-drivers vulkan-tools xvfb xauth unzip
   libxss1 libxtst6 libxkbcommon0 libdrm2)
 
 WANT_BLENDER=0
+WANT_KTX=0
 WANT_APT=1
 for arg in "$@"; do
   case "$arg" in
     --blender) WANT_BLENDER=1 ;;
+    --ktx) WANT_KTX=1 ;;
     --no-apt) WANT_APT=0 ;;
     *) echo "bootstrap: unknown argument $arg" >&2; exit 2 ;;
   esac
@@ -98,6 +109,31 @@ if [ "$WANT_BLENDER" = 1 ]; then
   .venv/bin/python -c "import bpy" >/dev/null 2>&1 || .venv/bin/pip install -q "bpy==$BPY_VERSION"
 fi
 
+# 4b. KTX-Software (the `ktx` tool), only when asked. Unpacked into .tools/ktx/{bin,lib}; no system install.
+if [ "$WANT_KTX" = 1 ] && [ ! -x "$TOOLS/ktx/bin/ktx" ]; then
+  log "KTX-Software $KTX_VERSION ($PLATFORM)"
+  case "$PLATFORM" in
+    linux-x64) file="KTX-Software-$KTX_VERSION-Linux-x86_64.tar.bz2" ;;
+    darwin-arm64) file="KTX-Software-$KTX_VERSION-Darwin-arm64.pkg" ;;
+    *) echo "bootstrap: no pinned KTX-Software build for $PLATFORM" >&2; exit 1 ;;
+  esac
+  curl -fsSL --retry 4 -o "$TOOLS/$file" "https://github.com/KhronosGroup/KTX-Software/releases/download/v$KTX_VERSION/$file"
+  got="$(sha256 "$TOOLS/$file")"
+  if [ "$got" != "$(ktx_sha256 "$PLATFORM")" ]; then
+    echo "bootstrap: checksum mismatch for $file: got $got" >&2; rm -f "$TOOLS/$file"; exit 1
+  fi
+  rm -rf "$TOOLS/ktx" "$TOOLS/ktx-unpack" && mkdir -p "$TOOLS/ktx/bin" "$TOOLS/ktx/lib"
+  if [ "$PLATFORM" = linux-x64 ]; then
+    tar xjf "$TOOLS/$file" -C "$TOOLS" && mv "$TOOLS/KTX-Software-$KTX_VERSION-Linux-x86_64" "$TOOLS/ktx-unpack"
+    cp "$TOOLS/ktx-unpack/bin/ktx" "$TOOLS/ktx/bin/" && cp -P "$TOOLS/ktx-unpack/lib/"libktx.so* "$TOOLS/ktx/lib/"
+  else
+    pkgutil --expand-full "$TOOLS/$file" "$TOOLS/ktx-unpack"
+    cp "$TOOLS"/ktx-unpack/*tools.pkg/Payload/usr/local/bin/ktx "$TOOLS/ktx/bin/"
+    cp -P "$TOOLS"/ktx-unpack/*library.pkg/Payload/usr/local/lib/libktx* "$TOOLS/ktx/lib/"
+  fi
+  rm -rf "$TOOLS/ktx-unpack" "$TOOLS/$file"
+fi
+
 # 5. Versions. Every pinned tool must answer; a failure here fails the bootstrap.
 log "versions"
 ver() { printf '%-26s %s\n' "$1" "$2"; }
@@ -111,6 +147,11 @@ if [ "$PLATFORM" = linux-x64 ]; then
   ver xvfb "$(dpkg-query -W -f='${Version}' xvfb)"
   ver mesa-vulkan "$(dpkg-query -W -f='${Version}' mesa-vulkan-drivers)"
   ver vulkan-device "$(vulkaninfo --summary 2>/dev/null | sed -n 's/^[[:space:]]*deviceName[[:space:]]*= //p' | head -n1)"
+fi
+if [ -x "$TOOLS/ktx/bin/ktx" ]; then
+  ver ktx "$(DYLD_LIBRARY_PATH="$TOOLS/ktx/lib" LD_LIBRARY_PATH="$TOOLS/ktx/lib" "$TOOLS/ktx/bin/ktx" --version | sed 's/^ktx version: //')"
+else
+  ver ktx "not installed (pass --ktx)"
 fi
 if [ -x .venv/bin/python ]; then
   ver bpy "$(.venv/bin/python -c 'import bpy; print(bpy.app.version_string)' 2>/dev/null || echo 'not importable')"

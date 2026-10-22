@@ -71,3 +71,11 @@ Format: MASTER_PLAN §8.6. Newest at the bottom.
 - Alternatives: fixed horizontal view (Vert−, crops wide screens); unlimited pixel ratio (a 1440×900 Retina laptop would shade 5.2 MP per frame on an 8 GB M1).
 - Consequences: a 3440×1440 window on Medium renders 2225×931 and is upscaled; the M1 Air at 1440×900 Retina renders 1821×1138. Tier choice comes in M1.6, the field-of-view setting in M1.1/M1.6.
 - Revisit when: the owner's benchmark (M0.7) or playtests say the default field of view or budgets are wrong.
+
+## 2026-10-22 D-011 Lightmaps ship as half-float KTX2 with Zstandard; RGBM not needed
+- Context: MASTER_PLAN §4.5 asked M0.4 to choose by test between RGBM 8-bit KTX2 and HDR KTX2, within 2 MB per 1024² map and with no visible banding. The M0.1 lightmap shipped as a 1.47 MB 16-bit EXR decoded in JavaScript.
+- Decision: `R16G16B16A16_SFLOAT` KTX2 with Zstandard level 22 (`tools/pipeline/encode_lightmap.mjs`, ktx 4.4.2 pinned in `tools/bootstrap.sh --ktx`): 1525 KB for the 1024² corridor map, loaded by three.js KTX2Loader with no shader decode, filtering set to linear (the loader leaves raw formats on nearest). The bake's EXRs move to `assets_src/` (git-ignored). The lightmap UV V-flip is gone: KTX2 rows are top-down like glTF UVs; the old EXR loader returned them bottom-up.
+- Test: the tour with the KTX2 map matches the EXR-based baselines at 0.000% on all five stops through both backends, so there is no banding or precision loss; the lightmap debug view now has its own baselines. `B10G11R11_UFLOAT` (0.83 MB, half the GPU memory) was tried first and rejected: ktx 4.4.2 writes infinities and NaNs for a clean input (seen in ktx's own round trip and in the browser), which turned every frame black through bloom. RGBM was not built: HDR already meets the budget with no decode cost and no block artifacts.
+- Alternatives: keep EXR (decoder cost on load, not a GPU format); RGBM in UASTC (smaller on the GPU, but a shader decode and block error in dark gradients); B10G11R11 (broken in the current tool).
+- Consequences: 8 MB of GPU memory per 1024² lightmap; a 15-map slice costs ~120 MB. Re-encoding needs `bootstrap.sh --ktx`. Vite's JS grew 40 KB gzip for the Zstandard decoder.
+- Revisit when: a ktx release fixes B10G11R11 (halves lightmap memory), or the M4.10 performance pass finds texture memory tight on the 8 GB M1.

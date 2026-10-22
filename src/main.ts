@@ -18,8 +18,8 @@ import { bayer16 } from 'three/addons/tsl/math/Bayer.js';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import RAPIER from '@dimforge/rapier3d-compat';
-import { flipLightmapV } from './render/lightmap';
 import { installHarness } from './debug/harness';
 import { installDisplay } from './render/display';
 import { isTouchOnly, readDeviceSignals, showDeviceNotice } from './core/device';
@@ -78,7 +78,9 @@ scene.environmentIntensity = 0.06;
 
 // ---------- static level: Blender mesh + baked lightmap ----------
 const gltf = new GLTFLoader();
-const lightmap = await new EXRLoader().setDataType(THREE.FloatType).loadAsync('./assets/corridor_lm.exr'); // half-float upload came out blown-out under WebGPU
+// HDR lightmap: half-float KTX2, Zstandard-compressed (D-011); uploaded as-is, no decode in the shader
+const lightmap = await new KTX2Loader().detectSupport(renderer).loadAsync('./assets/corridor_lm.ktx2');
+lightmap.minFilter = lightmap.magFilter = THREE.LinearFilter; // the loader leaves raw formats on nearest
 lightmap.channel = 0;
 const corridor = (await gltf.loadAsync('./assets/corridor.glb')).scene;
 // world-space detail so no second UV set is needed: fractal noise drives albedo variation + bump
@@ -87,7 +89,8 @@ const pores = mx_fractal_noise_float(positionWorld.mul(9.0), 3, 2.0, 0.5);
 corridor.traverse((obj) => {
   if (!(obj as THREE.Mesh).isMesh) return;
   const o = obj as THREE.Mesh;
-  flipLightmapV(o.geometry.attributes.uv as THREE.BufferAttribute);
+  // no V flip: KTX2 rows are top-down like glTF UVs. The EXR loader returned them bottom-up, which is why
+  // M0.1 flipped the UVs (MASTER_PLAN §2.1); ?view=lightmap shows any mismatch at a glance.
   const src = o.material as THREE.MeshStandardMaterial;
   const m = new THREE.MeshStandardNodeMaterial();
   const isFloor = src.name === 'WetFloor';

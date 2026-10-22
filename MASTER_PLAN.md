@@ -95,13 +95,13 @@ Never, in any run:
 | Physics | Rapier 0.21: six stacked and dropped crates all at rest; self-test passed in both backends |
 | Free assets via npm | `@pmndrs/assets` (CC0) HDRI used for reflections on dynamic objects |
 | Bundle | three.js WebGPU build + Rapier + HDRI: 4.6 MB raw, 1.8 MB gzip |
-| Lightmap size | 1024² EXR: 12.6 MB raw. Must be compressed for the web (M0.4) |
+| Lightmap size | 1024² EXR: 12.6 MB raw. Must be compressed for the web (M0.4) — now 1.5 MB as half-float KTX2 + Zstandard (D-011) |
 
 Lessons from the test that are now rules:
 
 - WebGPU needs a secure context: `navigator.gpu` was missing on a `data:` page and present on `http://localhost`.
 - The browser's own screenshot of a WebGPU canvas came back blank. Automated screenshots must read pixels from a render target (`renderer.readRenderTargetPixelsAsync`), as the harness now does.
-- Blender bakes are stored bottom-up while glTF UVs are top-down: flip V once on the lightmap UVs. The test caught this with a lightmap debug view; keep that view.
+- Lightmap row order depends on the loader: the EXR loader returned Blender's bake bottom-up, so M0.1 flipped V on the UVs; the KTX2 lightmaps (D-011) are top-down like glTF UVs and need no flip. The lightmap debug view catches a mismatch at once; keep it, and keep it in the tour.
 - Raw path-traced bakes are speckled; always denoise.
 
 ### 2.2 Platform facts
@@ -334,7 +334,7 @@ Quality tiers (targets; auto-detected on first run, adjustable):
 
 1. **Source:** Blender scripts generate the modular kit and props (`tools/blender/`), or scanned assets arrive from §6 sources.
 2. **Bake:** per-zone Cycles bake (diffuse direct + indirect) → OpenImageDenoise → EXR.
-3. **Encode lightmaps** (decide in M0.4 by test): RGBM 8-bit in KTX2 versus HDR KTX2. Pass criteria: no visible banding in dark gradients, at most 2 MB per 1024² map (target).
+3. **Encode lightmaps** as half-float HDR KTX2 with Zstandard (decided in M0.4, D-011): no visible banding in dark gradients, at most 2 MB per 1024² map; `tools/pipeline/encode_lightmap.mjs` enforces the size.
 4. **Optimise meshes and textures:** glTF-Transform `dedup`, `prune`, `weld`, `meshopt` compression; textures to KTX2 (ETC1S for colour, UASTC for normal and roughness maps).
 5. **Manifest:** `public/assets/manifest.json` lists every file, its zone, size and ledger id; the loader streams by zone.
 6. **Checks:** a pipeline test fails if a file lacks a ledger entry, exceeds its size budget, or is missing LODs where required.

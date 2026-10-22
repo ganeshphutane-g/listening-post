@@ -12,6 +12,7 @@
 //   options:  --backend webgpu|webgl|both (default both)   --size 960x540   --dpr 1
 //             --mode native|vulkan|swiftshader (default: native on macOS, vulkan on Linux)
 //             --sizes 1280x720,1920x1080   window sizes for `responsive`
+//             --view lightmap|uv   tour a debug view (own baselines, e.g. webgpu-view-lightmap/)
 //             --update   write current frames as the new baselines
 import { app, BrowserWindow, nativeImage } from 'electron';
 import { createServer } from 'node:http';
@@ -22,7 +23,7 @@ import pixelmatch from 'pixelmatch';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const argv = process.argv.slice(process.argv.findIndex((a) => a.endsWith('run.mjs')) + 1);
-const VALUED = new Set(['--backend', '--size', '--dpr', '--mode', '--sizes']);
+const VALUED = new Set(['--backend', '--size', '--dpr', '--mode', '--sizes', '--view']);
 const positionals = argv.filter((a, i) => !a.startsWith('--') && !VALUED.has(argv[i - 1]));
 const opt = (name, def) => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : def; };
 const flag = (name) => argv.includes(`--${name}`);
@@ -32,8 +33,9 @@ const [W, H] = opt('size', '960x540').split('x').map(Number);
 const DPR = Number(opt('dpr', '1'));
 const MODE = opt('mode', process.platform === 'linux' ? 'vulkan' : 'native');
 const PLATFORM = `${process.platform}-${MODE}`;
+const VIEW = opt('view', '');
 const MAX_DIFF = 0.002; // fraction of pixels allowed to differ from a baseline
-const OUT = join(ROOT, 'tests/visual/out', command);
+const OUT = join(ROOT, 'tests/visual/out', VIEW ? `${command}-view-${VIEW}` : command);
 const BASELINES = join(ROOT, 'tests/visual/baselines', PLATFORM);
 const TIMEOUT_MS = 10 * 60 * 1000;
 const SIZES = opt('sizes', '1280x720,1366x768,1440x900,1920x1080,3440x1440').split(',').map((s) => s.split('x').map(Number));
@@ -156,7 +158,7 @@ async function run() {
   } else {
     const tour = JSON.parse(await readFile(join(ROOT, 'tests/visual/tour.json'), 'utf8')).stops;
     for (const backend of BACKENDS) {
-      await openGame(win, base, backend);
+      await openGame(win, base, backend, VIEW ? `&view=${VIEW}` : '');
       if (command === 'shoot') {
         const stop = tour.find((s) => s.name === positional) ?? tour[0];
         const { png: data } = await call(win, `window.__harness.still(${JSON.stringify(stop)})`);
@@ -170,7 +172,7 @@ async function run() {
           const { png: data } = await call(win, `window.__harness.still(${JSON.stringify(stop)})`);
           const buf = png(data);
           await writeFile(join(OUT, `${backend}-${stop.name}.png`), buf);
-          report.results.push({ ...(await compare(stop.name, backend, buf)), seconds: (Date.now() - t0) / 1000 });
+          report.results.push({ ...(await compare(stop.name, VIEW ? `${backend}-view-${VIEW}` : backend, buf)), seconds: (Date.now() - t0) / 1000 });
         }
       } else if (command === 'scenarios') {
         for (const name of await call(win, 'window.__harness.scenarios()')) {

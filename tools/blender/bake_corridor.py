@@ -1,7 +1,8 @@
 """Browser-pipeline test: model a corridor in headless Blender, bake global illumination into a
 lightmap with Cycles (CPU), export the mesh as glTF and the lightmap as EXR.
 Usage: python3 bake_corridor.py <out_dir> [samples] [lightmap_px] [raw_dir]
-raw_dir keeps the un-denoised bake out of the shipped assets (defaults to out_dir)."""
+raw_dir receives the raw and denoised EXR bakes, which are not shipped (defaults to out_dir);
+tools/pipeline/encode_lightmap.mjs turns the denoised one into the game's KTX2 (D-011)."""
 import sys, time, math
 import bpy
 
@@ -115,12 +116,12 @@ try:
     scn.render.use_compositing = True
     scn.render.image_settings.file_format = "OPEN_EXR"
     scn.render.image_settings.color_depth = "16"
-    scn.render.filepath = f"{out_dir}/corridor_lm.exr"
+    scn.render.filepath = f"{RAW_DIR}/corridor_lm.exr"
     bpy.ops.render.render(write_still=True)
     denoised = True
 except Exception as e:
     print("DENOISE_FAILED", repr(e))
-    img.filepath_raw = f"{out_dir}/corridor_lm.exr"; img.save()
+    img.filepath_raw = f"{RAW_DIR}/corridor_lm.exr"; img.save()
 print(f"DENOISE denoised={denoised} seconds={time.time() - t1:.0f}")
 
 # remove bake nodes before export so the glTF carries plain materials
