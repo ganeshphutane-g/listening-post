@@ -1,0 +1,28 @@
+{
+  "note": "Sound-event tuning (MASTER_PLAN \u00a73.5 item 1, \u00a74.7, M1.5). Loudness in dB at 1 m; the creature's hearing and the audio engine read these. Sound ids name files that arrive with the audio assets (M5).",
+  "footstepDb": {
+    "crouch": 42,
+    "walk": 54,
+    "sprint": 63
+  },
+  "surfaceDb": {
+    "concrete": 0,
+    "concrete_wet": 3,
+    "metal": 6,
+    "wood": 2,
+    "tile": 1,
+    "linoleum": -3,
+    "water": 5,
+    "gravel": 4
+  },
+  "impact": {
+    "referenceImpulse": 5,
+    "referenceDb": 52,
+    "minDb": 28,
+    "maxDb": 100,
+    "forceThreshold": 40,
+    "weightMultiple": 2.5,
+    "cooldown": 0.1
+  },
+  "variants": 4
+}

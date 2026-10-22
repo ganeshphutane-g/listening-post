@@ -14,3 +14,4 @@
 - 2026-10-22 M1.2: character controller — walk, sprint with stamina, crouch (no standing up under low ceilings), lean that stops at walls, stairs and slope limit, head-bob with a settings switch, footstep events; fixed 60 Hz loop; the preview is now walkable (WASD, Shift, C, Q/E); 4 controller scenarios.
 - 2026-10-22 M1.3: flashlight — reflector beam pattern (IES profile), trails the camera, 900 s battery with fade and flicker when low, F toggles; new tour stop `torch-wall`; baselines regenerated.
 - 2026-10-22 M1.4: interaction — focus ray and prompt, carry on a spring (heavy props drag), throw by hold time, hinged doors and drawers dragged through joint motors with limits; 3 interaction scenarios. Inspect-and-rotate deferred to M1.7.
+- 2026-10-22 M1.5: sound events — typed event bus, surface tags, footstep and impact loudness table, variant picking without repeats, weight-scaled impact thresholds; `?debug=1` event log; scenario `sound-events`.

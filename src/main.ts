@@ -29,6 +29,9 @@ import { Input } from './player/input';
 import { CharacterController } from './player/controller';
 import { Flashlight } from './player/flashlight';
 import { Interaction } from './player/interaction';
+import { EventBus, type GameEvents } from './core/events';
+import { SoundEvents } from './audio/soundEvents';
+import { installDebugOverlay } from './debug/overlay';
 import warehouseHDR from '@pmndrs/assets/hdri/warehouse.exr.js'; // CC0 HDRI shipped on npm
 
 const params = new URLSearchParams(location.search);
@@ -165,7 +168,10 @@ scene.add(fogBox);
 await RAPIER.init();
 const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 const fixed = (hx: number, hy: number, hz: number, x: number, y: number, z: number) => world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z));
-fixed(2, 0.1, 12, 0, -0.1, -10); fixed(0.1, 1.6, 12, -2.1, 1.5, -10); fixed(0.1, 1.6, 12, 2.1, 1.5, -10);
+const bus = new EventBus<GameEvents>();
+const sound = new SoundEvents(RAPIER, world, bus); // footsteps and impacts as sound events (M1.5)
+sound.tag(fixed(2, 0.1, 12, 0, -0.1, -10), 'concrete_wet'); // the floor is the baked WetFloor
+fixed(0.1, 1.6, 12, -2.1, 1.5, -10); fixed(0.1, 1.6, 12, 2.1, 1.5, -10);
 for (const z of [-4, -10, -16]) for (const x of [-1.75, 1.75]) fixed(0.25, 1.5, 0.25, x, 1.5, z);
 fixed(2.2, 1.6, 0.1, 0, 1.5, 2.1); fixed(2.2, 1.6, 0.1, 0, 1.5, -22.1); fixed(2, 0.1, 12, 0, 3.1, -10); // end walls, ceiling
 fixed(0.3, 0.95, 0.6, 1.65, 0.95, -12.8); fixed(0.3, 0.55, 0.3, -1.65, 0.55, -18.5); // filing cabinets
@@ -182,6 +188,7 @@ spots.forEach(([x, y, z], i) => {
   scene.add(mesh);
   crates.push({ body, mesh });
 });
+crateColliders.forEach((c) => sound.tag(c, 'wood', true));
 const syncCrates = () => crates.forEach(({ body, mesh }) => { mesh.position.copy(body.translation()); mesh.quaternion.copy(body.rotation()); });
 
 // ---------- post-processing: SSR on the wet floor, fog, bloom, grain, SMAA ----------
@@ -215,6 +222,8 @@ player.headBob = settings.headBob;
 let crouchLatched = false;
 const interaction = new Interaction(RAPIER, world, player.collider);
 crates.forEach(({ body }, i) => interaction.register(crateColliders[i], { kind: 'prop', body })); // ~25 kg: dragged, not lifted
+player.onFootstep = (e) => sound.footstep(e.position, e.gait, player.collider);
+if (params.has('debug')) installDebugOverlay(bus);
 const prompt = document.getElementById('prompt')!;
 let throwHeld = false;
 const viewDir = () => ({ x: -Math.sin(look.y) * Math.cos(look.x), y: Math.sin(look.x), z: -Math.cos(look.y) * Math.cos(look.x) });
@@ -266,12 +275,12 @@ function tick(physics: boolean) {
   t += 1 / 60;
   const n = flicker.noise(t * 8, 0.5, 0);
   fogLamp.intensity = n < -0.35 ? 0.6 : 6 + n * 3;
-  if (physics) { world.step(); syncCrates(); }
+  if (physics) { world.step(sound.queue); sound.drain(1 / 60); syncCrates(); }
   flashlight.update(1 / 60);
 }
 syncCrates();
 if (HARNESS) {
-  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input, onCameraCut: () => flashlight.snap() });
+  installHarness({ renderer, pipeline, camera, backend, isWebGPU, tick, world, rapier: RAPIER, crates, display, input, onCameraCut: () => flashlight.snap(), sound, bus });
 } else if (params.has('bench')) {
   runBench({ renderer, pipeline, camera, backend, isWebGPU, tick, display });
 } else {

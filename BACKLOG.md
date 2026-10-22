@@ -73,7 +73,7 @@ Item format: MASTER_PLAN §8.5. Text copied from MASTER_PLAN §9; change both to
   - Accept: scenarios: door opens by drag; throw distance within tuning range; drawers stop at limits.
   - Needs: M1.3
   - Est: 1 run
-- [ ] M1.5 Footsteps and impacts
+- [x] M1.5 Footsteps and impacts
   - Do: Surface detection, sound selection, `SoundEvent` loudness.
   - Accept: unit test of the loudness table; event log in debug overlay.
   - Needs: M1.4
